@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# bookin - GLORIOUS Barbershop Booking & Admin Portal
 
-## Getting Started
+Sistem reservasi online dan portal manajemen admin barbershop mewah terintegrasi (Next.js 16 + Tailwind CSS).
 
-First, run the development server:
+## Fitur Utama
+
+- **Landing Page & Reservasi Online**:
+  - Hero section mewah (Rosewood `#6B0B0C` & Lemon Chiffon `#FFF8CA`).
+  - Booking form interaktif dengan pemilihan cabang, tanggal, jam, layanan, master barber, dan alokasi kursi real-time.
+  - Galeri style haircut & katalog produk grooming.
+  
+- **Portal Admin Terintegrasi (`/admin`)**:
+  - **Dashboard Keuangan**: Monitoring omzet (harian, mingguan, bulanan, tahunan), beban operasional, laba bersih, rincian omzet per cabang, kanal pembayaran (QRIS, EDC, Tunai), dan buku kas real-time.
+  - **Kasir Barbershop (POS)**: Point of sale interaktif untuk layanan & penjualan produk, diskon, cetak struk invoice.
+  - **Manajemen Cabang & Kursi**: Pengaturan jumlah kapasitas kursi per cabang pangkas yang otomatis tersinkronisasi dengan booking customer.
+  - **Kasbon Karyawan**: Pencatatan pinjaman kasbon staf barber dan potongan otomatis pada slip gaji.
+  - **Absensi & Mutasi Cabang**: Absensi harian dan mutasi staf antar cabang.
+  - **Booking Manajemen**: Tracking antrean dan alokasi nomor kursi tamu.
+  - **Manajemen Stok Produk**: Inventaris barang dengan status Aman, Menipis, dan Kritis.
+  - **Slip Gaji (Payroll)**: Perhitungan gaji pokok, komisi pangkas (35%), komisi produk (10%), potongan kasbon, dan BPJS.
+
+## Menjalankan Proyek
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# atau production build
+npm run build
+npm start
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

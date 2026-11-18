@@ -1,26 +1,93 @@
-@import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html, body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #121010;
+  /* Deep warm luxury charcoal matching rosewood tones */
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
 }
+
+.main-container {
+  background-color: #fbf9f5;
+  /* Premium off-white / light cream container */
+  border-radius: 0;
+  overflow: hidden;
+  max-width: 100%;
+  width: 100%;
+  border: none;
+}
+
+.hero-section {
+  background-size: cover;
+  background-position: center;
+  border-radius: 0;
+  position: relative;
+}
+
+.glass-card {
+  background: rgba(18, 16, 16, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 248, 202, 0.2);
+}
+
+/* Custom pill styles */
+.nav-pill {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.nav-pill.active {
+  background-color: #FFF8CA;
+  color: #6B0B0C;
+  font-weight: 600;
+  border-color: #FFF8CA;
+}
+
+.nav-pill:hover:not(.active) {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 248, 202, 0.4);
+}
+
+.explore-btn-container {
+  position: absolute;
+  bottom: -2rem;
+  right: 0;
+  background-color: #fbf9f5;
+  padding: 1rem 0 0 1rem;
+  border-radius: 2rem 0 0 0;
+}
+
+.explore-btn {
+  background-color: #6B0B0C;
+  color: #FFF8CA;
+  border: 1px solid #6B0B0C;
+  transition: all 0.3s ease;
+}
+
+.explore-btn:hover {
+  background-color: #55090a;
+  color: #ffffff;
+}
+
+/* Hide scrollbar on the right side of the page */
+::-webkit-scrollbar {
+  display: none;
+  width: 0px;
+  background: transparent;
+}
+
+html, body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
