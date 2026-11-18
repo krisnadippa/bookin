@@ -689,11 +689,12 @@ export default function AdminPage() {
     },
   ]);
 
-  // Form Input Kasbon Baru
+  // Form Input Kasbon Baru (Staf cukup input nominal & keperluan, masuk ke Owner untuk disetujui)
   const [newKasbonStaff, setNewKasbonStaff] = useState("Alex 'The Blade' Tan");
   const [newKasbonAmount, setNewKasbonAmount] = useState<number>(500000);
-  const [newKasbonDeduction, setNewKasbonDeduction] = useState<number>(250000);
   const [newKasbonPurpose, setNewKasbonPurpose] = useState("");
+  const [approvingKasbon, setApprovingKasbon] = useState<KasbonRecord | null>(null);
+  const [approvalDeductionInput, setApprovalDeductionInput] = useState<number>(250000);
 
   const handleAddKasbon = (e: React.FormEvent) => {
     e.preventDefault();
@@ -704,15 +705,35 @@ export default function AdminPage() {
       staffName: staff.name,
       branch: staff.branch,
       amount: Number(newKasbonAmount),
-      monthlyDeduction: Number(newKasbonDeduction),
+      monthlyDeduction: 0, // Belum ada potongan gaji sampai Owner menyetujui
       remainingAmount: Number(newKasbonAmount),
       date: "18 Nov 2025",
       purpose: newKasbonPurpose || "Keperluan mendesak pribadi",
-      status: "Disetujui",
+      status: "Menunggu", // Masuk ke antrean persetujuan Owner
     };
     setKasbonList([newRecord, ...kasbonList]);
     setNewKasbonPurpose("");
-    alert(`Kasbon sebesar ${formatRupiah(newKasbonAmount)} untuk ${staff.name} berhasil dicatat.`);
+    alert(`Pengajuan kasbon sebesar ${formatRupiah(newKasbonAmount)} untuk ${staff.name} berhasil dikirim ke Owner untuk ditinjau. Gaji belum dipotong hingga Owner menyetujui.`);
+  };
+
+  const handleConfirmApproveKasbon = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!approvingKasbon) return;
+    setKasbonList((prev) =>
+      prev.map((k) =>
+        k.id === approvingKasbon.id
+          ? {
+              ...k,
+              status: "Disetujui",
+              monthlyDeduction: Number(approvalDeductionInput),
+            }
+          : k
+      )
+    );
+    alert(
+      `Kasbon ${approvingKasbon.id} untuk ${approvingKasbon.staffName} telah DISETUJUI oleh Owner dengan cicilan potong gaji ${formatRupiah(approvalDeductionInput)}/bulan. Nominal ini sekarang aktif memotong slip gaji.`
+    );
+    setApprovingKasbon(null);
   };
 
   const updateKasbonStatus = (id: string, newStatus: KasbonRecord["status"]) => {
@@ -1369,10 +1390,10 @@ export default function AdminPage() {
     }).format(num);
   };
 
-  // Hitung ringkasan kasbon per staf
+  // Hitung ringkasan kasbon per staf (HANYA MEMOTONG GAJI JIKA SUDAH DISETUJUI OWNER)
   const getStaffKasbonDeduction = (staffName: string) => {
     const activeKasbon = kasbonList.find(
-      (k) => k.staffName === staffName && (k.status === "Disetujui" || k.status === "Menunggu")
+      (k) => k.staffName === staffName && k.status === "Disetujui"
     );
     return activeKasbon ? activeKasbon.monthlyDeduction : 0;
   };
@@ -2965,19 +2986,6 @@ export default function AdminPage() {
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Potongan per Bulan pada Slip Gaji (Rp) *
-                      </label>
-                      <input
-                        type="number"
-                        step="50000"
-                        required
-                        value={newKasbonDeduction}
-                        onChange={(e) => setNewKasbonDeduction(Number(e.target.value))}
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C] font-bold text-rose-600"
-                      />
-                    </div>
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -3363,97 +3371,124 @@ export default function AdminPage() {
                 </form>
               </div>
 
-              {/* Box Pengaturan Persentase Komisi Lembur */}
-              <div className="bg-white p-6 rounded-2xl shadow-xs border border-slate-200 space-y-4">
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 border-b border-slate-100">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#6B0B0C]/10 text-[#6B0B0C] flex items-center justify-center shrink-0">
-                      <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                      </svg>
+              {/* Pengaturan Komisi Lembur: HANYA OWNER YANG BISA MENGATUR RATE */}
+              {currentUser.role === "owner" ? (
+                <div className="bg-white p-6 rounded-2xl shadow-xs border border-slate-200 space-y-4">
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 border-b border-slate-100">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[#6B0B0C]/10 text-[#6B0B0C] flex items-center justify-center shrink-0">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-black text-slate-900 text-sm">
+                            Pengaturan Kebijakan Komisi Lembur Kapster (Wewenang Owner)
+                          </h3>
+                          <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-[#6B0B0C] text-[#FFF8CA]">
+                            Owner Setting
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 max-w-2xl mt-0.5">
+                          Atur persentase komisi treatment di luar jam operasional toko. Staf tidak memiliki hak untuk memilih atau mengubah rate ini.
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-black text-slate-900 text-sm">
-                        Kebijakan Komisi Lembur Kapster (Treatment di Luar Jam Operasional)
+
+                    {/* Pengaturan Nilai Persen Oleh Owner */}
+                    <div className="flex flex-wrap items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Persentase Komisi Lembur (%):
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="number"
+                            min="10"
+                            max="100"
+                            step="5"
+                            value={overtimeCommissionRate}
+                            onChange={(e) => setOvertimeCommissionRate(Math.max(0, Number(e.target.value)))}
+                            className="w-20 px-2.5 py-1.5 text-xs font-black text-[#6B0B0C] bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-[#6B0B0C] text-center"
+                          />
+                          <span className="text-xs font-bold text-slate-600">%</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Tunjangan Per Jam (Rp):
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="number"
+                            step="5000"
+                            value={overtimeHourlyRate}
+                            onChange={(e) => setOvertimeHourlyRate(Math.max(0, Number(e.target.value)))}
+                            className="w-28 px-2.5 py-1.5 text-xs font-black text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-[#6B0B0C] text-right"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Quick Preset Buttons */}
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-bold text-slate-400 mb-1">Preset Cepat:</span>
+                        <div className="flex gap-1">
+                          {[30, 40, 50, 60, 75].map((pct) => (
+                            <button
+                              key={pct}
+                              type="button"
+                              onClick={() => setOvertimeCommissionRate(pct)}
+                              className={`px-2 py-1 rounded text-[11px] font-bold transition cursor-pointer ${
+                                overtimeCommissionRate === pct
+                                  ? "bg-[#6B0B0C] text-[#FFF8CA]"
+                                  : "bg-white text-slate-700 hover:bg-slate-200 border border-slate-200"
+                              }`}
+                            >
+                              {pct}%
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Formula Bar */}
+                  <div className="bg-amber-50/60 border border-amber-200/80 rounded-xl p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs">
+                    <div className="text-slate-800">
+                      <span className="font-bold text-[#6B0B0C]">Rumus Perhitungan Otomatis:</span>{" "}
+                      <code>
+                        Komisi Lembur = ({overtimeCommissionRate}% × Nilai Treatment Customer Overtime) + (Jam Lembur × {formatRupiah(overtimeHourlyRate)})
+                      </code>
+                    </div>
+                    <span className="text-[11px] font-bold text-emerald-700 bg-white px-2.5 py-1 rounded-lg border border-emerald-200">
+                      ✓ Terhubung ke Slip Gaji
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                /* TAMPILAN DI AKUN CABANG: HANYA INFORMASI KEBIJAKAN RESMI OWNER, TIDAK BISA DIUBAH */
+                <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-900 flex items-center justify-center font-bold text-sm shrink-0">
+                    📜
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-xs text-amber-950">
+                        Kebijakan Komisi Lembur Resmi (Ditetapkan Manajemen Owner Pusat)
                       </h3>
-                      <p className="text-xs text-slate-500 max-w-2xl mt-0.5">
-                        Jika treatment customer memakan waktu lama melebihi jam tutup toko (misal lewat jam 21:00 / 22:00), kapster berhak mendapatkan komisi lembur dari nilai treatment ditambah tunjangan lembur per jam.
-                      </p>
+                      <span className="text-[9px] font-bold text-amber-800 bg-white px-2 py-0.5 rounded border border-amber-200">
+                        Rate Aktif: {overtimeCommissionRate}%
+                      </span>
                     </div>
-                  </div>
-
-                  {/* Pengaturan Nilai Persen */}
-                  <div className="flex flex-wrap items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                        Persentase Komisi Lembur (%):
-                      </label>
-                      <div className="flex items-center gap-1.5">
-                        <input
-                          type="number"
-                          min="10"
-                          max="100"
-                          step="5"
-                          value={overtimeCommissionRate}
-                          onChange={(e) => setOvertimeCommissionRate(Math.max(0, Number(e.target.value)))}
-                          className="w-20 px-2.5 py-1.5 text-xs font-black text-[#6B0B0C] bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-[#6B0B0C] text-center"
-                        />
-                        <span className="text-xs font-bold text-slate-600">%</span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                        Tunjangan Per Jam (Rp):
-                      </label>
-                      <div className="flex items-center gap-1.5">
-                        <input
-                          type="number"
-                          step="5000"
-                          value={overtimeHourlyRate}
-                          onChange={(e) => setOvertimeHourlyRate(Math.max(0, Number(e.target.value)))}
-                          className="w-28 px-2.5 py-1.5 text-xs font-black text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-[#6B0B0C] text-right"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Quick Preset Buttons */}
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-bold text-slate-400 mb-1">Preset Cepat:</span>
-                      <div className="flex gap-1">
-                        {[30, 40, 50, 60, 75].map((pct) => (
-                          <button
-                            key={pct}
-                            type="button"
-                            onClick={() => setOvertimeCommissionRate(pct)}
-                            className={`px-2 py-1 rounded text-[11px] font-bold transition cursor-pointer ${
-                              overtimeCommissionRate === pct
-                                ? "bg-[#6B0B0C] text-[#FFF8CA]"
-                                : "bg-white text-slate-700 hover:bg-slate-200 border border-slate-200"
-                            }`}
-                          >
-                            {pct}%
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                    <p className="text-[11px] text-amber-900 mt-0.5 leading-relaxed">
+                      Besaran komisi lembur kapster adalah <strong>{overtimeCommissionRate}%</strong> dari nilai treatment customer yang dikerjakan di luar jam operasional toko, ditambah tunjangan sebesar <strong>{formatRupiah(overtimeHourlyRate)}/jam</strong>. Rate ini dikelola secara terpusat oleh <strong>Owner</strong> dan staf tidak dapat mengubah persentase ini saat presensi.
+                    </p>
                   </div>
                 </div>
-
-                {/* Formula Bar */}
-                <div className="bg-amber-50/60 border border-amber-200/80 rounded-xl p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs">
-                  <div className="text-slate-800">
-                    <span className="font-bold text-[#6B0B0C]">Rumus Perhitungan Otomatis:</span>{" "}
-                    <code>
-                      Komisi Lembur = ({overtimeCommissionRate}% × Nilai Treatment Customer Overtime) + (Jam Lembur × {formatRupiah(overtimeHourlyRate)})
-                    </code>
-                  </div>
-                  <span className="text-[11px] font-bold text-emerald-700 bg-white px-2.5 py-1 rounded-lg border border-emerald-200">
-                    ✓ Terhubung ke Slip Gaji
-                  </span>
-                </div>
-              </div>
+              )}
 
               {/* 4 KPI Kehadiran & Lembur */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -5082,6 +5117,91 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+      {/* ========================================================= */}
+      {/* MODAL APPROVAL KASBON OLEH OWNER (TENTUKAN CICILAN GAJI) */}
+      {/* ========================================================= */}
+      {approvingKasbon && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-150">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="font-black text-slate-900 text-base">Persetujuan Kasbon Karyawan</h3>
+                <p className="text-xs text-slate-500">
+                  Tinjau pengajuan dan tentukan potongan gaji bulanan.
+                </p>
+              </div>
+              <button
+                onClick={() => setApprovingKasbon(null)}
+                className="text-slate-400 hover:text-slate-700 text-lg p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleConfirmApproveKasbon} className="space-y-4 pt-4">
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Nama Barber:</span>
+                  <strong className="text-slate-900 font-bold">{approvingKasbon.staffName}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Cabang Penempatan:</span>
+                  <span className="text-slate-700">{approvingKasbon.branch}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Nominal Diajukan:</span>
+                  <strong className="text-rose-600 font-black text-sm">{formatRupiah(approvingKasbon.amount)}</strong>
+                </div>
+                <div className="flex justify-between pt-1 border-t border-slate-200/60">
+                  <span className="text-slate-500">Keperluan:</span>
+                  <span className="text-slate-800 italic text-right max-w-[200px]">{approvingKasbon.purpose}</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1">
+                  Tentukan Potongan Cicilan per Bulan pada Slip Gaji (Rp) *
+                </label>
+                <input
+                  type="number"
+                  step="50000"
+                  min="50000"
+                  max={approvingKasbon.amount}
+                  required
+                  value={approvalDeductionInput}
+                  onChange={(e) => setApprovalDeductionInput(Number(e.target.value))}
+                  className="w-full px-3 py-2 text-xs font-black text-rose-600 border-2 border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                />
+                <span className="text-[10px] text-slate-400 mt-1 block">
+                  Perkiraan lunas dalam:{" "}
+                  <strong>{Math.ceil(approvingKasbon.amount / (approvalDeductionInput || 1))} bulan gajian</strong>.
+                </span>
+              </div>
+
+              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-[11px] text-emerald-800 leading-relaxed">
+                ✓ Setelah tombol di bawah ditekan, status berubah menjadi <strong>Disetujui</strong> dan nominal cicilan di atas <strong>resmi aktif memotong slip gaji</strong> karyawan.
+              </div>
+
+              <div className="pt-3 border-t border-slate-200 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setApprovingKasbon(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-xs cursor-pointer"
+                >
+                  Setujui &amp; Terapkan Potongan Gaji
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* ========================================================= */}
       {/* MODAL 1: SWITCH AKUN / LOGIN CABANG (MULTI-ROLE) */}
       {/* ========================================================= */}
