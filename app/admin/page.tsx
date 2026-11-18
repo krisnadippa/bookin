@@ -12,7 +12,20 @@ type TabType =
   | "attendance"
   | "kasbon"
   | "inventory"
-  | "payroll";
+  | "payroll"
+  | "staff_crud";
+
+type UserRole = "owner" | "branch";
+
+interface UserAccount {
+  id: string;
+  name: string;
+  role: UserRole;
+  branchId: string;
+  branchName: string;
+  pin: string;
+  color?: string;
+}
 
 interface BranchData {
   id: string;
@@ -42,6 +55,7 @@ interface BookingItem {
 
 interface StaffMember {
   id: string;
+  uniqueCode: string; // e.g. GLR-SEN-01, KAP-001
   name: string;
   role: string;
   branch: string;
@@ -54,6 +68,7 @@ interface StaffMember {
   totalIzin: number;
   baseSalary: number;
   avatar: string;
+  joinDate?: string;
   // Foto Absensi di Barbershop
   checkInPhoto?: string;
   checkInLocation?: string;
@@ -114,6 +129,118 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<TabType>("dashboard");
   const [selectedBranchFilter, setSelectedBranchFilter] = useState<string>("Semua Cabang");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // --- 0. MULTI-ACCOUNT & ROLE SYSTEM (OWNER vs CABANG) ---
+  const [userAccounts, setUserAccounts] = useState<UserAccount[]>([
+    {
+      id: "owner",
+      name: "Owner & Direksi Pusat",
+      role: "owner",
+      branchId: "all",
+      branchName: "Semua Cabang (Kantor Pusat)",
+      pin: "8888",
+      color: "bg-[#6B0B0C] text-[#FFF8CA]",
+    },
+    {
+      id: "senopati",
+      name: "Kasir & Ops Senopati",
+      role: "branch",
+      branchId: "senopati",
+      branchName: "Senopati Heritage",
+      pin: "1234",
+      color: "bg-emerald-700 text-white",
+    },
+    {
+      id: "scbd",
+      name: "Kasir & Ops SCBD",
+      role: "branch",
+      branchId: "scbd",
+      branchName: "SCBD Executive Lounge",
+      pin: "1234",
+      color: "bg-blue-700 text-white",
+    },
+    {
+      id: "dharmawangsa",
+      name: "Kasir & Ops Dharmawangsa",
+      role: "branch",
+      branchId: "dharmawangsa",
+      branchName: "Dharmawangsa Atelier",
+      pin: "1234",
+      color: "bg-amber-700 text-white",
+    },
+    {
+      id: "pondok-indah",
+      name: "Kasir & Ops Pondok Indah",
+      role: "branch",
+      branchId: "pondok-indah",
+      branchName: "Pondok Indah Sanctuary",
+      pin: "1234",
+      color: "bg-purple-700 text-white",
+    },
+  ]);
+  const [currentUser, setCurrentUser] = useState<UserAccount>(userAccounts[0]);
+  const [showAccountModal, setShowAccountModal] = useState<boolean>(false);
+  const [accountPinInput, setAccountPinInput] = useState<string>("");
+  const [targetAccountToLogin, setTargetAccountToLogin] = useState<UserAccount | null>(null);
+
+  const switchAccount = (target: UserAccount) => {
+    setCurrentUser(target);
+    if (target.role === "branch") {
+      setSelectedBranchFilter(target.branchName);
+      if (!["pos", "attendance", "kasbon", "inventory"].includes(activeTab)) {
+        setActiveTab("pos");
+      }
+    } else {
+      setSelectedBranchFilter("Semua Cabang");
+    }
+    setShowAccountModal(false);
+    setTargetAccountToLogin(null);
+    setAccountPinInput("");
+  };
+
+  // --- CRUD CABANG & KURSI STATE (OWNER ONLY) ---
+  const [showBranchModal, setShowBranchModal] = useState(false);
+  const [editingBranch, setEditingBranch] = useState<BranchData | null>(null);
+  const [branchNameInput, setBranchNameInput] = useState("");
+  const [branchAreaInput, setBranchAreaInput] = useState("Jakarta Selatan");
+  const [branchAddressInput, setBranchAddressInput] = useState("");
+  const [branchPhoneInput, setBranchPhoneInput] = useState("+62 811-9876-0000");
+  const [branchHoursInput, setBranchHoursInput] = useState("09:00 - 21:00 WIB");
+  const [branchChairsInput, setBranchChairsInput] = useState(5);
+  const [branchPinInput, setBranchPinInput] = useState("1234");
+
+  // --- CRUD DATA KARYAWAN & ID UNIK (OWNER ONLY) ---
+  const [showStaffModal, setShowStaffModal] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
+  const [viewingIdCardStaff, setViewingIdCardStaff] = useState<StaffMember | null>(null);
+  const [staffNameInput, setStaffNameInput] = useState("");
+  const [staffRoleInput, setStaffRoleInput] = useState("Master Barber");
+  const [staffBranchInput, setStaffBranchInput] = useState("Senopati Heritage");
+  const [staffPhoneInput, setStaffPhoneInput] = useState("0812-8877-6655");
+  const [staffSalaryInput, setStaffSalaryInput] = useState(4000000);
+  const [staffShiftInput, setStaffShiftInput] = useState("Pagi (09:00 - 17:00)");
+  const [staffAvatarInput, setStaffAvatarInput] = useState(
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop"
+  );
+
+  // --- RESTOCK PRODUK MODAL (CABANG HANYA BISA NAMBAH STOK) ---
+  const [showRestockModal, setShowRestockModal] = useState(false);
+  const [restockProduct, setRestockProduct] = useState<ProductStock | null>(null);
+  const [restockAmount, setRestockAmount] = useState(10);
+  const [restockNotes, setRestockNotes] = useState("");
+
+  // --- KIOSK ABSENSI MANDIRI KAPSTER (INPUT ID UNIK + FOTO) ---
+  const [kioskIdInput, setKioskIdInput] = useState("");
+  const [kioskActionType, setKioskActionType] = useState<"checkIn" | "checkOut">("checkIn");
+  const [kioskPhoto, setKioskPhoto] = useState(
+    "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=600&auto=format&fit=crop"
+  );
+  const [kioskTime, setKioskTime] = useState("08:45 WIB");
+  const [kioskIsOvertime, setKioskIsOvertime] = useState(false);
+  const [kioskOvertimeHours, setKioskOvertimeHours] = useState(1);
+  const [kioskOvertimeVal, setKioskOvertimeVal] = useState(250000);
+  const [kioskCustomerNotes, setKioskCustomerNotes] = useState("");
+  const [kioskSuccessAlert, setKioskSuccessAlert] = useState("");
 
   // --- KEUANGAN & PEMASUKAN STATE ---
   const [financePeriod, setFinancePeriod] = useState<"Hari Ini" | "Minggu Ini" | "Bulan Ini" | "Tahun Ini">("Bulan Ini");
@@ -296,6 +423,8 @@ export default function AdminPage() {
   const [staffList, setStaffList] = useState<StaffMember[]>([
     {
       id: "STF-01",
+      uniqueCode: "GLR-SEN-01",
+      joinDate: "15 Jan 2023",
       name: "Alex 'The Blade' Tan",
       role: "Master Barber",
       branch: "Senopati Heritage",
@@ -322,6 +451,8 @@ export default function AdminPage() {
     },
     {
       id: "STF-02",
+      uniqueCode: "GLR-SCB-01",
+      joinDate: "02 Mar 2023",
       name: "Rian Kurniawan",
       role: "Senior Stylist",
       branch: "SCBD Executive Lounge",
@@ -348,6 +479,8 @@ export default function AdminPage() {
     },
     {
       id: "STF-03",
+      uniqueCode: "GLR-DHW-01",
+      joinDate: "10 Jun 2023",
       name: "David Gunawan",
       role: "Shaving Artisan",
       branch: "Dharmawangsa Atelier",
@@ -374,6 +507,8 @@ export default function AdminPage() {
     },
     {
       id: "STF-04",
+      uniqueCode: "GLR-PDK-01",
+      joinDate: "18 Agu 2023",
       name: "Bagus Pratama",
       role: "Creative Barber",
       branch: "Pondok Indah Sanctuary",
@@ -397,6 +532,8 @@ export default function AdminPage() {
     },
     {
       id: "STF-05",
+      uniqueCode: "GLR-SEN-02",
+      joinDate: "05 Nov 2023",
       name: "Dimas Anggara",
       role: "Junior Barber & Washer",
       branch: "Senopati Heritage",
@@ -852,9 +989,241 @@ export default function AdminPage() {
     };
     setFinancialTransactions((prev) => [newTx, ...prev]);
 
+    // Otomatis kurangi stok produk di inventaris jika cart berisi item tipe 'Produk'
+    cart.forEach((c) => {
+      if (c.type === "Produk") {
+        setInventory((prev) =>
+          prev.map((p) => {
+            if (p.name.toLowerCase() === c.name.toLowerCase()) {
+              const newStock = Math.max(0, p.stock - c.qty);
+              const newStatus =
+                newStock <= 8 ? "Kritis" : newStock <= p.minStock ? "Menipis" : "Aman";
+              return { ...p, stock: newStock, status: newStatus };
+            }
+            return p;
+          })
+        );
+      }
+    });
+
     setCart([]);
     setPosCustomer("");
     setPosDiscount(0);
+  };
+
+  // --- HANDLER: OWNER SIMPAN CABANG & KURSI ---
+  const handleSaveBranch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!branchNameInput.trim()) return;
+
+    if (editingBranch) {
+      setBranches((prev) =>
+        prev.map((b) =>
+          b.id === editingBranch.id
+            ? {
+                ...b,
+                name: branchNameInput,
+                area: branchAreaInput,
+                address: branchAddressInput,
+                phone: branchPhoneInput,
+                hours: branchHoursInput,
+                totalChairs: Number(branchChairsInput),
+              }
+            : b
+        )
+      );
+      alert(`Cabang ${branchNameInput} berhasil diperbarui!`);
+    } else {
+      const branchId = `branch-${Date.now()}`;
+      const newB: BranchData = {
+        id: branchId,
+        name: branchNameInput,
+        area: branchAreaInput,
+        address: branchAddressInput || "Alamat Cabang",
+        phone: branchPhoneInput,
+        hours: branchHoursInput,
+        totalChairs: Number(branchChairsInput),
+        occupiedChairs: 0,
+        status: "Buka",
+      };
+      setBranches((prev) => [...prev, newB]);
+
+      // Buat akun login cabang otomatis
+      const newAcc: UserAccount = {
+        id: branchId,
+        name: `Kasir & Ops ${branchNameInput}`,
+        role: "branch",
+        branchId: branchId,
+        branchName: branchNameInput,
+        pin: branchPinInput || "1234",
+        color: "bg-teal-700 text-white",
+      };
+      setUserAccounts((prev) => [...prev, newAcc]);
+      alert(`Cabang ${branchNameInput} dan Akun Login Cabang (${newAcc.name}, PIN: ${newAcc.pin}) berhasil dibuat!`);
+    }
+
+    setShowBranchModal(false);
+    setEditingBranch(null);
+    setBranchNameInput("");
+  };
+
+  const handleDeleteBranch = (id: string, name: string) => {
+    if (confirm(`Apakah Anda yakin ingin menghapus cabang ${name}?`)) {
+      setBranches((prev) => prev.filter((b) => b.id !== id));
+      setUserAccounts((prev) => prev.filter((a) => a.branchId !== id));
+      alert(`Cabang ${name} berhasil dihapus.`);
+    }
+  };
+
+  // --- HANDLER: OWNER CRUD DATA KARYAWAN & ID UNIK ---
+  const handleSaveStaff = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!staffNameInput.trim()) return;
+
+    if (editingStaff) {
+      setStaffList((prev) =>
+        prev.map((s) =>
+          s.id === editingStaff.id
+            ? {
+                ...s,
+                name: staffNameInput,
+                role: staffRoleInput,
+                branch: staffBranchInput,
+                phone: staffPhoneInput,
+                baseSalary: Number(staffSalaryInput),
+                shift: staffShiftInput,
+                avatar: staffAvatarInput,
+              }
+            : s
+        )
+      );
+      alert(`Data staf ${staffNameInput} berhasil diperbarui!`);
+    } else {
+      const staffNum = staffList.length + 1;
+      const branchShort = staffBranchInput.split(" ")[0].substring(0, 3).toUpperCase();
+      const generatedCode = `GLR-${branchShort}-0${staffNum}`;
+      const newStaff: StaffMember = {
+        id: `STF-0${staffNum}`,
+        uniqueCode: generatedCode,
+        joinDate: "18 Nov 2025",
+        name: staffNameInput,
+        role: staffRoleInput,
+        branch: staffBranchInput,
+        phone: staffPhoneInput,
+        checkIn: "-",
+        checkOut: "-",
+        status: "Izin",
+        shift: staffShiftInput,
+        totalHadir: 0,
+        totalIzin: 0,
+        baseSalary: Number(staffSalaryInput),
+        avatar: staffAvatarInput,
+        overtimeHours: 0,
+        overtimeTreatmentVal: 0,
+        overtimeCustomerNotes: "",
+      };
+      setStaffList((prev) => [...prev, newStaff]);
+      alert(`Karyawan baru ${staffNameInput} berhasil ditambahkan dengan ID Unik: ${generatedCode}!`);
+    }
+
+    setShowStaffModal(false);
+    setEditingStaff(null);
+    setStaffNameInput("");
+  };
+
+  const handleDeleteStaff = (id: string, name: string) => {
+    if (confirm(`Apakah Anda yakin ingin menghapus kapster ${name}?`)) {
+      setStaffList((prev) => prev.filter((s) => s.id !== id));
+      alert(`Karyawan ${name} berhasil dihapus dari sistem.`);
+    }
+  };
+
+  // --- HANDLER: RESTOCK PRODUK (CABANG HANYA BISA NAMBAH) ---
+  const handleRestockSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!restockProduct) return;
+    const qtyToAdd = Number(restockAmount);
+    setInventory((prev) =>
+      prev.map((item) => {
+        if (item.id === restockProduct.id) {
+          const newStock = item.stock + qtyToAdd;
+          const newStatus =
+            newStock <= 8 ? "Kritis" : newStock <= item.minStock ? "Menipis" : "Aman";
+          return { ...item, stock: newStock, status: newStatus };
+        }
+        return item;
+      })
+    );
+    // Catat juga ke transaksi keuangan outflow jika ada biaya restock
+    const expenseTx: FinancialTransaction = {
+      id: `TRX-RST-${Math.floor(1000 + Math.random() * 9000)}`,
+      date: "18 Nov 2025, 15:30 WIB",
+      type: "outflow",
+      category: "Restock Produk",
+      description: `Restock +${qtyToAdd} Pcs ${restockProduct.name} (${restockNotes || "Kiriman dari Gudang Pusat"})`,
+      branch: currentUser.role === "branch" ? currentUser.branchName : selectedBranchFilter,
+      paymentMethod: "Transfer Bank",
+      amount: qtyToAdd * restockProduct.buyPrice,
+      status: "Selesai",
+    };
+    setFinancialTransactions((prev) => [expenseTx, ...prev]);
+
+    alert(`Berhasil restock +${qtyToAdd} Pcs untuk produk ${restockProduct.name}! Stok sekarang: ${restockProduct.stock + qtyToAdd} Pcs.`);
+    setShowRestockModal(false);
+    setRestockProduct(null);
+    setRestockNotes("");
+  };
+
+  // --- HANDLER: KIOSK ABSENSI MANDIRI KAPSTER ---
+  const handleKioskSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = kioskIdInput.trim().toUpperCase();
+    if (!query) {
+      alert("Masukkan ID Unik Karyawan terlebih dahulu!");
+      return;
+    }
+    const staff = staffList.find(
+      (s) => s.uniqueCode.toUpperCase() === query || s.id.toUpperCase() === query || s.name.toUpperCase().includes(query)
+    );
+    if (!staff) {
+      alert(`ID Karyawan "${kioskIdInput}" tidak ditemukan! Periksa kembali ID pada kartu staf Anda.`);
+      return;
+    }
+
+    const branchLocation = currentUser.role === "branch" ? currentUser.branchName : staff.branch;
+    setStaffList((prev) =>
+      prev.map((s) => {
+        if (s.id === staff.id) {
+          if (kioskActionType === "checkIn") {
+            return {
+              ...s,
+              status: "Hadir",
+              checkIn: kioskTime,
+              checkInPhoto: kioskPhoto,
+              checkInLocation: `${branchLocation} (Presensi Mandiri)`,
+            };
+          } else {
+            return {
+              ...s,
+              checkOut: kioskTime,
+              checkOutPhoto: kioskPhoto,
+              checkOutLocation: `${branchLocation} (Presensi Mandiri)`,
+              overtimeHours: kioskIsOvertime ? Number(kioskOvertimeHours) : 0,
+              overtimeTreatmentVal: kioskIsOvertime ? Number(kioskOvertimeVal) : 0,
+              overtimeCustomerNotes: kioskIsOvertime ? kioskCustomerNotes : "",
+            };
+          }
+        }
+        return s;
+      })
+    );
+
+    const actionLabel = kioskActionType === "checkIn" ? "Check-In (Datang)" : "Check-Out (Pulang)";
+    const overtimeInfo = kioskActionType === "checkOut" && kioskIsOvertime ? ` dengan komisi lembur ${formatRupiah(Math.round((kioskOvertimeVal * overtimeCommissionRate) / 100 + kioskOvertimeHours * overtimeHourlyRate))}` : "";
+    setKioskSuccessAlert(`Sukses! ${staff.name} (${staff.uniqueCode}) berhasil melakukan ${actionLabel}${overtimeInfo}.`);
+    setKioskIdInput("");
+    setKioskIsOvertime(false);
+    setKioskCustomerNotes("");
   };
 
   const handleAddExpense = (e: React.FormEvent) => {
@@ -1038,28 +1407,36 @@ export default function AdminPage() {
           </Link>
         </div>
 
-        {/* Global Branch Filter Selector */}
-        <div className="hidden md:flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-3 py-1.5 shadow-xs">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B0B0C" strokeWidth="2">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-          </svg>
-          <span className="text-xs text-slate-500 font-medium">Cabang Terpilih:</span>
-          <select
-            value={selectedBranchFilter}
-            onChange={(e) => setSelectedBranchFilter(e.target.value)}
-            className="bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
-          >
-            <option value="Semua Cabang">Semua Cabang (4)</option>
-            {branches.map((b) => (
-              <option key={b.id} value={b.name}>
-                {b.name} ({b.occupiedChairs}/{b.totalChairs} Kursi)
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Global Branch Filter Selector / Locked Badge */}
+        {currentUser.role === "owner" ? (
+          <div className="hidden md:flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-3 py-1.5 shadow-xs">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B0B0C" strokeWidth="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span className="text-xs text-slate-500 font-medium">Filter Cabang:</span>
+            <select
+              value={selectedBranchFilter}
+              onChange={(e) => setSelectedBranchFilter(e.target.value)}
+              className="bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
+            >
+              <option value="Semua Cabang">Semua Cabang ({branches.length})</option>
+              {branches.map((b) => (
+                <option key={b.id} value={b.name}>
+                  {b.name} ({b.occupiedChairs}/{b.totalChairs} Kursi)
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div className="hidden md:flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1.5 shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-xs text-emerald-800 font-medium">Cabang Terkunci:</span>
+            <span className="text-xs font-bold text-emerald-950">{currentUser.branchName}</span>
+          </div>
+        )}
 
-        {/* Right user & landing page link */}
+        {/* Right user & landing page link + Switch Account Button */}
         <div className="flex items-center gap-3">
           <Link
             href="/"
@@ -1073,15 +1450,31 @@ export default function AdminPage() {
             <span>Landing Page</span>
           </Link>
 
-          <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-            <div className="w-8 h-8 rounded-full bg-[#6B0B0C] text-[#FFF8CA] flex items-center justify-center font-bold text-xs shadow-xs">
-              AD
+          {/* Account Switcher Button */}
+          <button
+            onClick={() => setShowAccountModal(true)}
+            className="flex items-center gap-2 pl-2 border-l border-slate-200 hover:opacity-85 transition cursor-pointer text-left group"
+            title="Klik untuk beralih akun login atau pindah cabang"
+          >
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shadow-xs ${
+                currentUser.role === "owner"
+                  ? "bg-[#6B0B0C] text-[#FFF8CA]"
+                  : "bg-emerald-700 text-white"
+              }`}
+            >
+              {currentUser.role === "owner" ? "👑" : "🏪"}
             </div>
             <div className="hidden lg:block text-left">
-              <div className="text-xs font-bold text-slate-900 leading-tight">Admin Manager</div>
-              <div className="text-[10px] text-slate-500">GLORIOUS Central</div>
+              <div className="text-xs font-bold text-slate-900 leading-tight flex items-center gap-1 group-hover:text-[#6B0B0C]">
+                <span>{currentUser.name}</span>
+                <span className="text-[10px] text-slate-400">▼</span>
+              </div>
+              <div className="text-[10px] text-slate-500">
+                {currentUser.role === "owner" ? "Akses Owner (Pusat)" : currentUser.branchName}
+              </div>
             </div>
-          </div>
+          </button>
         </div>
       </header>
 
@@ -1093,202 +1486,386 @@ export default function AdminPage() {
             sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
           }`}
         >
-          <div className="space-y-6 pt-2">
-            <div>
-              <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 px-3 mb-2">
-                Manajemen Operasional
-              </p>
-              <nav className="space-y-1">
-                {/* 1. Dashboard Overview */}
+          <div className="space-y-4 pt-2 overflow-y-auto max-h-[calc(100vh-140px)] pr-1">
+            {/* Header Profil Akun Aktif */}
+            <div className={`p-3 rounded-2xl border transition ${
+              currentUser.role === "owner" ? "bg-[#FFF8CA]/40 border-[#6B0B0C]/20" : "bg-emerald-50/70 border-emerald-200"
+            }`}>
+              <div className="flex items-center justify-between mb-1">
+                <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${
+                  currentUser.role === "owner" ? "bg-[#6B0B0C] text-[#FFF8CA]" : "bg-emerald-700 text-white"
+                }`}>
+                  {currentUser.role === "owner" ? "Akses Owner" : "Akses Cabang"}
+                </span>
                 <button
-                  onClick={() => {
-                    setActiveTab("dashboard");
-                    setSidebarOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
-                    activeTab === "dashboard"
-                      ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
-                      : "hover:bg-slate-100 text-slate-700"
-                  }`}
+                  onClick={() => setShowAccountModal(true)}
+                  className="text-[11px] font-bold text-[#6B0B0C] hover:underline cursor-pointer"
                 >
-                  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <rect x="3" y="3" width="7" height="9" rx="1"></rect>
-                    <rect x="14" y="3" width="7" height="5" rx="1"></rect>
-                    <rect x="14" y="12" width="7" height="9" rx="1"></rect>
-                    <rect x="3" y="16" width="7" height="5" rx="1"></rect>
-                  </svg>
-                  <span>Dashboard Overview</span>
+                  Ganti ⇄
                 </button>
-
-                {/* 2. Kasir POS */}
-                <button
-                  onClick={() => {
-                    setActiveTab("pos");
-                    setSidebarOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
-                    activeTab === "pos"
-                      ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
-                      : "hover:bg-slate-100 text-slate-700"
-                  }`}
-                >
-                  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                    <line x1="6" y1="8" x2="6" y2="8"></line>
-                    <line x1="10" y1="8" x2="18" y2="8"></line>
-                    <line x1="6" y1="12" x2="6" y2="12"></line>
-                    <line x1="10" y1="12" x2="18" y2="12"></line>
-                    <line x1="6" y1="16" x2="18" y2="16"></line>
-                  </svg>
-                  <div className="flex-1 flex justify-between items-center">
-                    <span>Kasir Barbershop</span>
-                    <span className="text-[9px] bg-[#FFF8CA] text-[#6B0B0C] px-1.5 py-0.5 rounded font-black">
-                      POS
-                    </span>
-                  </div>
-                </button>
-
-                {/* 3. Manajemen Cabang & Kursi (NEW) */}
-                <button
-                  onClick={() => {
-                    setActiveTab("branches");
-                    setSidebarOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
-                    activeTab === "branches"
-                      ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
-                      : "hover:bg-slate-100 text-slate-700"
-                  }`}
-                >
-                  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                  </svg>
-                  <div className="flex-1 flex justify-between items-center">
-                    <span>Manajemen Cabang</span>
-                    <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full font-bold">
-                      {branches.reduce((acc, b) => acc + b.totalChairs, 0)} Kursi
-                    </span>
-                  </div>
-                </button>
-
-                {/* 4. Booking Manajemen */}
-                <button
-                  onClick={() => {
-                    setActiveTab("bookings");
-                    setSidebarOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
-                    activeTab === "bookings"
-                      ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
-                      : "hover:bg-slate-100 text-slate-700"
-                  }`}
-                >
-                  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
-                  <div className="flex-1 flex justify-between items-center">
-                    <span>Booking Manajemen</span>
-                    <span className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full font-bold">
-                      {bookings.filter((b) => b.status === "Menunggu").length}
-                    </span>
-                  </div>
-                </button>
-
-                {/* 5. Absensi & Pindah Cabang Staf */}
-                <button
-                  onClick={() => {
-                    setActiveTab("attendance");
-                    setSidebarOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
-                    activeTab === "attendance"
-                      ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
-                      : "hover:bg-slate-100 text-slate-700"
-                  }`}
-                >
-                  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                  </svg>
-                  <span>Absensi &amp; Pindah Cabang</span>
-                </button>
-
-                {/* 6. Kasbon Karyawan (NEW) */}
-                <button
-                  onClick={() => {
-                    setActiveTab("kasbon");
-                    setSidebarOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
-                    activeTab === "kasbon"
-                      ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
-                      : "hover:bg-slate-100 text-slate-700"
-                  }`}
-                >
-                  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <rect x="2" y="6" width="20" height="12" rx="2"></rect>
-                    <circle cx="12" cy="12" r="2"></circle>
-                    <path d="M6 12h.01M18 12h.01"></path>
-                  </svg>
-                  <div className="flex-1 flex justify-between items-center">
-                    <span>Kasbon Karyawan</span>
-                    <span className="text-[10px] bg-rose-100 text-rose-800 px-1.5 py-0.5 rounded-full font-bold">
-                      {kasbonList.length}
-                    </span>
-                  </div>
-                </button>
-
-                {/* 7. Stok Produk */}
-                <button
-                  onClick={() => {
-                    setActiveTab("inventory");
-                    setSidebarOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
-                    activeTab === "inventory"
-                      ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
-                      : "hover:bg-slate-100 text-slate-700"
-                  }`}
-                >
-                  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                  </svg>
-                  <span>Manajemen Stok</span>
-                </button>
-
-                {/* 8. Slip Gaji */}
-                <button
-                  onClick={() => {
-                    setActiveTab("payroll");
-                    setSidebarOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
-                    activeTab === "payroll"
-                      ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
-                      : "hover:bg-slate-100 text-slate-700"
-                  }`}
-                >
-                  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <line x1="12" y1="1" x2="12" y2="23"></line>
-                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                  </svg>
-                  <span>Slip Gaji (Payroll)</span>
-                </button>
-              </nav>
+              </div>
+              <div className="font-bold text-slate-900 text-xs truncate">{currentUser.name}</div>
+              <div className="text-[10px] text-slate-500 mt-0.5 truncate">
+                {currentUser.role === "owner" ? "Seluruh Cabang & Finansial" : currentUser.branchName}
+              </div>
             </div>
+
+            {/* JIKA LOGIN SEBAGAI CABANG: HANYA KASIR, ABSENSI, KASBON, DAN STOK PRODUK */}
+            {currentUser.role === "branch" ? (
+              <div className="space-y-3">
+                <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 px-3">
+                  Menu Operasional Cabang
+                </p>
+                <nav className="space-y-1">
+                  {/* 1. Kasir POS */}
+                  <button
+                    onClick={() => {
+                      setActiveTab("pos");
+                      setSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
+                      activeTab === "pos"
+                        ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
+                        : "hover:bg-slate-100 text-slate-700"
+                    }`}
+                  >
+                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                      <line x1="6" y1="8" x2="6" y2="8"></line>
+                      <line x1="10" y1="8" x2="18" y2="8"></line>
+                      <line x1="6" y1="12" x2="6" y2="12"></line>
+                      <line x1="10" y1="12" x2="18" y2="12"></line>
+                      <line x1="6" y1="16" x2="18" y2="16"></line>
+                    </svg>
+                    <div className="flex-1 flex justify-between items-center">
+                      <span>Kasir Barbershop</span>
+                      <span className="text-[9px] bg-[#FFF8CA] text-[#6B0B0C] px-1.5 py-0.5 rounded font-black">
+                        POS
+                      </span>
+                    </div>
+                  </button>
+
+                  {/* 2. Absensi Mandiri Kapster */}
+                  <button
+                    onClick={() => {
+                      setActiveTab("attendance");
+                      setSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
+                      activeTab === "attendance"
+                        ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
+                        : "hover:bg-slate-100 text-slate-700"
+                    }`}
+                  >
+                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span>Absensi Mandiri Kapster</span>
+                  </button>
+
+                  {/* 3. Kasbon Karyawan */}
+                  <button
+                    onClick={() => {
+                      setActiveTab("kasbon");
+                      setSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
+                      activeTab === "kasbon"
+                        ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
+                        : "hover:bg-slate-100 text-slate-700"
+                    }`}
+                  >
+                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                      <circle cx="12" cy="12" r="2"></circle>
+                      <path d="M6 12h.01M18 12h.01"></path>
+                    </svg>
+                    <div className="flex-1 flex justify-between items-center">
+                      <span>Kasbon Karyawan</span>
+                      <span className="text-[10px] bg-rose-100 text-rose-800 px-1.5 py-0.5 rounded-full font-bold">
+                        {kasbonList.filter((k) => k.branch === currentUser.branchName).length}
+                      </span>
+                    </div>
+                  </button>
+
+                  {/* 4. Stok Produk Cabang (Restock Only) */}
+                  <button
+                    onClick={() => {
+                      setActiveTab("inventory");
+                      setSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
+                      activeTab === "inventory"
+                        ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
+                        : "hover:bg-slate-100 text-slate-700"
+                    }`}
+                  >
+                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    </svg>
+                    <div className="flex-1 flex justify-between items-center">
+                      <span>Stok Produk Cabang</span>
+                      <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">
+                        Restock
+                      </span>
+                    </div>
+                  </button>
+                </nav>
+
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[10px] text-slate-500 leading-relaxed mt-4">
+                  🔒 <strong>Akses Terbatas Cabang</strong>: Laporan omzet, slip gaji, kelola cabang, dan CRUD karyawan hanya dapat diakses melalui akun Owner.
+                </div>
+              </div>
+            ) : (
+              /* JIKA LOGIN SEBAGAI OWNER: MENU LENGKAP DIPISAHKAN RAPI PER KATEGORI */
+              <div className="space-y-5">
+                {/* KATEGORI 1: LAPORAN & BISNIS */}
+                <div>
+                  <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 px-3 mb-1.5">
+                    1. Finansial &amp; Laporan
+                  </p>
+                  <nav className="space-y-0.5">
+                    <button
+                      onClick={() => {
+                        setActiveTab("dashboard");
+                        setSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
+                        activeTab === "dashboard"
+                          ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
+                          : "hover:bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="7" height="9" rx="1"></rect>
+                        <rect x="14" y="3" width="7" height="5" rx="1"></rect>
+                        <rect x="14" y="12" width="7" height="9" rx="1"></rect>
+                        <rect x="3" y="16" width="7" height="5" rx="1"></rect>
+                      </svg>
+                      <span>Dashboard &amp; Arus Kas</span>
+                    </button>
+                  </nav>
+                </div>
+
+                {/* KATEGORI 2: OPERASIONAL & TRANSAKSI */}
+                <div>
+                  <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 px-3 mb-1.5">
+                    2. Operasional &amp; Transaksi
+                  </p>
+                  <nav className="space-y-0.5">
+                    <button
+                      onClick={() => {
+                        setActiveTab("pos");
+                        setSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
+                        activeTab === "pos"
+                          ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
+                          : "hover:bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                        <line x1="6" y1="8" x2="6" y2="8"></line>
+                        <line x1="10" y1="8" x2="18" y2="8"></line>
+                        <line x1="6" y1="12" x2="6" y2="12"></line>
+                        <line x1="10" y1="12" x2="18" y2="12"></line>
+                      </svg>
+                      <div className="flex-1 flex justify-between items-center">
+                        <span>Kasir Barbershop</span>
+                        <span className="text-[9px] bg-[#FFF8CA] text-[#6B0B0C] px-1.5 py-0.5 rounded font-black">
+                          POS
+                        </span>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setActiveTab("bookings");
+                        setSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
+                        activeTab === "bookings"
+                          ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
+                          : "hover:bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                      <div className="flex-1 flex justify-between items-center">
+                        <span>Booking &amp; Antrean</span>
+                        <span className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full font-bold">
+                          {bookings.filter((b) => b.status === "Menunggu").length}
+                        </span>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setActiveTab("inventory");
+                        setSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
+                        activeTab === "inventory"
+                          ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
+                          : "hover:bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                      </svg>
+                      <span>Stok &amp; Inventaris</span>
+                    </button>
+                  </nav>
+                </div>
+
+                {/* KATEGORI 3: KELOLA CABANG */}
+                <div>
+                  <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 px-3 mb-1.5">
+                    3. Kelola Cabang
+                  </p>
+                  <nav className="space-y-0.5">
+                    <button
+                      onClick={() => {
+                        setActiveTab("branches");
+                        setSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
+                        activeTab === "branches"
+                          ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
+                          : "hover:bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                      </svg>
+                      <div className="flex-1 flex justify-between items-center">
+                        <span>Cabang &amp; Kursi</span>
+                        <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full font-bold">
+                          {branches.length} Cabang
+                        </span>
+                      </div>
+                    </button>
+                  </nav>
+                </div>
+
+                {/* KATEGORI 4: KELOLA KARYAWAN & SDM */}
+                <div>
+                  <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 px-3 mb-1.5">
+                    4. Kelola Karyawan &amp; SDM
+                  </p>
+                  <nav className="space-y-0.5">
+                    {/* CRUD KARYAWAN (NEW) */}
+                    <button
+                      onClick={() => {
+                        setActiveTab("staff_crud");
+                        setSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
+                        activeTab === "staff_crud"
+                          ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
+                          : "hover:bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="8.5" cy="7" r="4"></circle>
+                        <line x1="20" y1="8" x2="20" y2="14"></line>
+                        <line x1="23" y1="11" x2="17" y2="11"></line>
+                      </svg>
+                      <div className="flex-1 flex justify-between items-center">
+                        <span>Data Karyawan &amp; ID Unik</span>
+                        <span className="text-[9px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-black">
+                          CRUD
+                        </span>
+                      </div>
+                    </button>
+
+                    {/* ABSENSI MANDIRI & LEMBUR */}
+                    <button
+                      onClick={() => {
+                        setActiveTab("attendance");
+                        setSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
+                        activeTab === "attendance"
+                          ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
+                          : "hover:bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                      </svg>
+                      <span>Absensi, Foto &amp; Lembur</span>
+                    </button>
+
+                    {/* KASBON KARYAWAN */}
+                    <button
+                      onClick={() => {
+                        setActiveTab("kasbon");
+                        setSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
+                        activeTab === "kasbon"
+                          ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
+                          : "hover:bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                        <circle cx="12" cy="12" r="2"></circle>
+                        <path d="M6 12h.01M18 12h.01"></path>
+                      </svg>
+                      <div className="flex-1 flex justify-between items-center">
+                        <span>Kasbon Karyawan</span>
+                        <span className="text-[10px] bg-rose-100 text-rose-800 px-1.5 py-0.5 rounded-full font-bold">
+                          {kasbonList.length}
+                        </span>
+                      </div>
+                    </button>
+
+                    {/* SLIP GAJI / PAYROLL */}
+                    <button
+                      onClick={() => {
+                        setActiveTab("payroll");
+                        setSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
+                        activeTab === "payroll"
+                          ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
+                          : "hover:bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                      </svg>
+                      <span>Slip Gaji (Payroll)</span>
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="pt-4 border-t border-slate-200 text-[11px] text-slate-400">
+          <div className="pt-3 border-t border-slate-200 text-[11px] text-slate-400">
             <p className="font-bold text-slate-800">GLORIOUS Clean Admin</p>
-            <p>Sistem Barbershop Terintegrasi</p>
+            <p className="text-[10px]">{currentUser.name}</p>
           </div>
         </aside>
 
@@ -1299,7 +1876,6 @@ export default function AdminPage() {
             className="fixed inset-0 bg-slate-900/30 z-20 lg:hidden"
           ></div>
         )}
-
         {/* Main Content Area Clean White */}
         <main className="flex-1 w-full min-w-0 p-4 sm:p-6 lg:p-8 overflow-y-auto max-h-[calc(100vh-65px)]">
           {/* ========================================================= */}
@@ -1998,37 +2574,41 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* TAB 2: MANAJEMEN CABANG & JUMLAH KURSI (NEW) */}
+          {/* TAB 2: MANAJEMEN CABANG & JUMLAH KURSI (OWNER ONLY) */}
           {/* ========================================================= */}
           {activeTab === "branches" && (
             <div className="w-full space-y-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-6 rounded-2xl shadow-xs border border-slate-200">
                 <div>
-                  <h1 className="text-2xl font-black text-slate-900">Manajemen Cabang &amp; Kursi</h1>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Atur jumlah kursi pangkas per cabang. Kapasitas ini langsung tersinkronisasi saat customer melakukan booking online.
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#6B0B0C]/10 text-[#6B0B0C]">
+                      Akses Khusus Owner
+                    </span>
+                    <span className="text-xs text-slate-400 font-semibold">• {branches.length} Cabang Aktif</span>
+                  </div>
+                  <h1 className="text-2xl font-black text-slate-900 mt-1">Manajemen Cabang &amp; Alokasi Kursi</h1>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Buat cabang baru, atur jumlah kapasitas kursi pangkas, dan kelola PIN akun login kasir masing-masing cabang.
                   </p>
                 </div>
                 <button
                   onClick={() => {
-                    const name = prompt("Masukkan Nama Cabang Baru:");
-                    if (name) {
-                      const newB: BranchData = {
-                        id: `branch-${Date.now()}`,
-                        name,
-                        area: "Jakarta",
-                        address: "Lokasi Cabang Baru",
-                        phone: "+62 811-0000-1111",
-                        hours: "09:00 - 21:00 WIB",
-                        totalChairs: 5,
-                        occupiedChairs: 0,
-                        status: "Buka",
-                      };
-                      setBranches([...branches, newB]);
-                    }
+                    setEditingBranch(null);
+                    setBranchNameInput("");
+                    setBranchAreaInput("Jakarta Selatan");
+                    setBranchAddressInput("");
+                    setBranchPhoneInput("+62 811-9876-0000");
+                    setBranchHoursInput("09:00 - 21:00 WIB");
+                    setBranchChairsInput(5);
+                    setBranchPinInput("1234");
+                    setShowBranchModal(true);
                   }}
-                  className="bg-[#6B0B0C] text-[#FFF8CA] px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-[#520809] transition flex items-center gap-1.5 shadow-xs"
+                  className="bg-[#6B0B0C] text-[#FFF8CA] px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-[#520809] transition flex items-center gap-1.5 shadow-xs cursor-pointer"
                 >
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
                   <span>+ Tambah Cabang Baru</span>
                 </button>
               </div>
@@ -2142,13 +2722,182 @@ export default function AdminPage() {
                         </div>
                       </div>
 
-                      <div className="pt-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500">
-                        <span>Jam: {b.hours}</span>
-                        <span>Hotline: {b.phone}</span>
+                      <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs text-slate-500">
+                        <div className="space-y-0.5">
+                          <div>Jam: <strong className="text-slate-800">{b.hours}</strong></div>
+                          <div>Hotline: <strong className="text-slate-800">{b.phone}</strong></div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              setEditingBranch(b);
+                              setBranchNameInput(b.name);
+                              setBranchAreaInput(b.area);
+                              setBranchAddressInput(b.address);
+                              setBranchPhoneInput(b.phone);
+                              setBranchHoursInput(b.hours);
+                              setBranchChairsInput(b.totalChairs);
+                              setShowBranchModal(true);
+                            }}
+                            className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+                          >
+                            Edit Cabang
+                          </button>
+                          {branches.length > 1 && (
+                            <button
+                              onClick={() => handleDeleteBranch(b.id, b.name)}
+                              className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 transition cursor-pointer"
+                            >
+                              Hapus
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* TAB: DATA KARYAWAN & ID UNIK (CRUD OWNER) */}
+          {/* ========================================================= */}
+          {activeTab === "staff_crud" && (
+            <div className="w-full space-y-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-6 rounded-2xl shadow-xs border border-slate-200">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#6B0B0C]/10 text-[#6B0B0C]">
+                      Manajemen SDM &amp; ID Card
+                    </span>
+                    <span className="text-xs text-slate-400 font-semibold">• Total {staffList.length} Karyawan</span>
+                  </div>
+                  <h1 className="text-2xl font-black text-slate-900 mt-1">Data Karyawan &amp; ID Unik Kapster</h1>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Kelola data kapster, penempatan cabang, slip gaji pokok, serta generate ID Unik mandiri untuk absensi tablet cabang.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setEditingStaff(null);
+                    setStaffNameInput("");
+                    setStaffRoleInput("Master Barber");
+                    setStaffBranchInput(branches[0]?.name || "Senopati Heritage");
+                    setStaffPhoneInput("0812-8877-6655");
+                    setStaffSalaryInput(4000000);
+                    setStaffShiftInput("Pagi (09:00 - 17:00)");
+                    setStaffAvatarInput("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop");
+                    setShowStaffModal(true);
+                  }}
+                  className="bg-[#6B0B0C] text-[#FFF8CA] px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-[#520809] transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+                >
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span>+ Tambah Karyawan Baru</span>
+                </button>
+              </div>
+
+              {/* Table of staff */}
+              <div className="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 text-slate-500 font-semibold uppercase text-[10px] tracking-wider border-b border-slate-200">
+                      <tr>
+                        <th className="py-3 px-4">ID Unik Mandiri</th>
+                        <th className="py-3 px-4">Nama Kapster</th>
+                        <th className="py-3 px-4">Jabatan &amp; Shift</th>
+                        <th className="py-3 px-4">Cabang Penempatan</th>
+                        <th className="py-3 px-4">No. WhatsApp</th>
+                        <th className="py-3 px-4">Gaji Pokok</th>
+                        <th className="py-3 px-4">Status Hari Ini</th>
+                        <th className="py-3 px-4 text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {staffList.map((s) => (
+                        <tr key={s.id} className="hover:bg-slate-50 transition">
+                          <td className="py-3 px-4 font-mono font-black text-slate-900">
+                            <span className="px-2 py-1 rounded-md bg-purple-50 text-purple-800 border border-purple-200">
+                              {s.uniqueCode}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 font-bold text-slate-900">
+                            <div className="flex items-center gap-2.5">
+                              <img
+                                src={s.avatar}
+                                alt={s.name}
+                                className="w-8 h-8 rounded-full object-cover border border-slate-200"
+                              />
+                              <div>
+                                <div>{s.name}</div>
+                                <div className="text-[10px] text-slate-400 font-normal">Bergabung: {s.joinDate || "2024"}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-slate-600">
+                            <div className="font-semibold">{s.role}</div>
+                            <div className="text-[10px] text-slate-400">{s.shift}</div>
+                          </td>
+                          <td className="py-3 px-4 font-medium text-slate-700">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[11px]">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                              {s.branch}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-slate-500 font-mono">{s.phone}</td>
+                          <td className="py-3 px-4 font-bold text-slate-900">{formatRupiah(s.baseSalary)}</td>
+                          <td className="py-3 px-4">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                s.status === "Hadir"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : s.status === "Izin"
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-rose-100 text-rose-800"
+                              }`}
+                            >
+                              {s.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
+                            <button
+                              onClick={() => setViewingIdCardStaff(s)}
+                              className="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#6B0B0C]/10 text-[#6B0B0C] hover:bg-[#6B0B0C] hover:text-[#FFF8CA] transition cursor-pointer"
+                              title="Lihat / Cetak Kartu ID Karyawan"
+                            >
+                              Kartu ID
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingStaff(s);
+                                setStaffNameInput(s.name);
+                                setStaffRoleInput(s.role);
+                                setStaffBranchInput(s.branch);
+                                setStaffPhoneInput(s.phone);
+                                setStaffSalaryInput(s.baseSalary);
+                                setStaffShiftInput(s.shift);
+                                setStaffAvatarInput(s.avatar);
+                                setShowStaffModal(true);
+                              }}
+                              className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteStaff(s.id, s.name)}
+                              className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 transition cursor-pointer"
+                            >
+                              Hapus
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
@@ -2346,20 +3095,272 @@ export default function AdminPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#6B0B0C]/10 text-[#6B0B0C]">
-                      Presensi Biometrik &amp; Komisi Lembur
+                      Presensi Mandiri &amp; Komisi Lembur
                     </span>
-                    <span className="text-xs text-slate-400 font-semibold">• Live GPS On-Site</span>
+                    <span className="text-xs text-slate-400 font-semibold">• Tablet Kiosk Cabang</span>
                   </div>
                   <h1 className="text-2xl font-black text-slate-900 mt-1">
-                    Absensi, Foto Kehadiran &amp; Komisi Lembur Kapster
+                    Absensi Mandiri Datang/Pulang &amp; Komisi Lembur
                   </h1>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Bukti foto selfie saat datang dan pulang di barbershop, serta komisi lembur otomatis saat menangani customer di luar jam operasional.
+                    Staf memasukkan ID Unik masing-masing, verifikasi profil, foto selfie barbershop, dan mencatat komisi lembur jika ada customer overtime.
                   </p>
                 </div>
                 <div className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  Tanggal: 18 November 2025 (Shift Aktif)
+                  Cabang Aktif: <strong className="text-emerald-900">{currentUser.role === "branch" ? currentUser.branchName : selectedBranchFilter}</strong>
                 </div>
+              </div>
+
+              {/* KIOSK PRESENSI MANDIRI KAPSTER (INPUT ID UNIK + FOTO + LEMBUR) */}
+              <div className="bg-white p-6 rounded-3xl shadow-sm border-2 border-[#6B0B0C]/20 space-y-5">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-[#6B0B0C] text-[#FFF8CA] flex items-center justify-center font-black text-base shadow-xs">
+                      ID
+                    </div>
+                    <div>
+                      <h2 className="text-base font-black text-slate-900">Kiosk Presensi Mandiri Kapster</h2>
+                      <p className="text-xs text-slate-500">
+                        Ketik ID Karyawan Unik Anda (atau klik nama Anda pada daftar cepat di bawah)
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                    Kiosk Tablet Mode
+                  </span>
+                </div>
+
+                {kioskSuccessAlert && (
+                  <div className="p-3.5 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center justify-between text-xs text-emerald-800">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm">✓</span>
+                      <span className="font-semibold">{kioskSuccessAlert}</span>
+                    </div>
+                    <button
+                      onClick={() => setKioskSuccessAlert("")}
+                      className="text-emerald-700 hover:text-emerald-950 font-bold p-1 cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+
+                {/* Quick Chips Kapster Cabang Aktif */}
+                <div>
+                  <span className="text-[11px] font-bold text-slate-500 mb-2 block">
+                    Pilih Cepat Staf {currentUser.role === "branch" ? currentUser.branchName : selectedBranchFilter}:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {staffList
+                      .filter((s) =>
+                        currentUser.role === "branch"
+                          ? s.branch === currentUser.branchName
+                          : selectedBranchFilter === "Semua Cabang"
+                          ? true
+                          : s.branch === selectedBranchFilter
+                      )
+                      .map((s) => (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => setKioskIdInput(s.uniqueCode)}
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+                            kioskIdInput.toUpperCase() === s.uniqueCode.toUpperCase()
+                              ? "bg-[#6B0B0C] text-[#FFF8CA] border-[#6B0B0C] shadow-xs"
+                              : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
+                          }`}
+                        >
+                          <img src={s.avatar} alt={s.name} className="w-5 h-5 rounded-full object-cover" />
+                          <span>{s.name}</span>
+                          <span className="font-mono text-[10px] opacity-75">({s.uniqueCode})</span>
+                        </button>
+                      ))}
+                  </div>
+                </div>
+
+                {/* Form Input ID & Eksekusi */}
+                <form onSubmit={handleKioskSubmit} className="space-y-4 pt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-800 mb-1">
+                        Masukkan ID Unik Karyawan *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Contoh: GLR-SEN-01"
+                        value={kioskIdInput}
+                        onChange={(e) => setKioskIdInput(e.target.value)}
+                        className="w-full px-3 py-2 text-xs font-mono font-bold tracking-wider uppercase border-2 border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C] bg-white text-slate-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-800 mb-1">
+                        Jenis Presensi *
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setKioskActionType("checkIn")}
+                          className={`py-2 px-3 rounded-xl text-xs font-bold border transition cursor-pointer text-center ${
+                            kioskActionType === "checkIn"
+                              ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                              : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                          }`}
+                        >
+                          ✓ Datang (Check-In)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setKioskActionType("checkOut")}
+                          className={`py-2 px-3 rounded-xl text-xs font-bold border transition cursor-pointer text-center ${
+                            kioskActionType === "checkOut"
+                              ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                              : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                          }`}
+                        >
+                          ⏱ Pulang (Check-Out)
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-800 mb-1">
+                        Jam Aktual Presensi *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={kioskTime}
+                        onChange={(e) => setKioskTime(e.target.value)}
+                        placeholder="e.g. 08:45 WIB atau 22:30 WIB"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C] bg-white font-semibold"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Foto Bukti On-Site di Barbershop */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800 mb-1">
+                      Foto Selfie On-Site Barbershop *
+                    </label>
+                    <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                      <input
+                        type="url"
+                        required
+                        value={kioskPhoto}
+                        onChange={(e) => setKioskPhoto(e.target.value)}
+                        placeholder="URL foto selfie bukti di barbershop"
+                        className="flex-1 w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C] bg-white"
+                      />
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="text-[10px] text-slate-400 font-bold">Preset Foto:</span>
+                        {[
+                          "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=400&auto=format&fit=crop",
+                          "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=400&auto=format&fit=crop",
+                          "https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=400&auto=format&fit=crop",
+                          "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?q=80&w=400&auto=format&fit=crop",
+                        ].map((imgUrl, i) => (
+                          <img
+                            key={i}
+                            src={imgUrl}
+                            alt="Preset"
+                            onClick={() => setKioskPhoto(imgUrl)}
+                            className={`w-8 h-8 rounded-lg object-cover cursor-pointer border-2 transition ${
+                              kioskPhoto === imgUrl ? "border-[#6B0B0C] scale-110" : "border-slate-200"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bagian Lembur Khusus Check-Out */}
+                  {kioskActionType === "checkOut" && (
+                    <div className="bg-amber-50/70 p-4 rounded-2xl border border-amber-200 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-black text-amber-950 cursor-pointer flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={kioskIsOvertime}
+                            onChange={(e) => setKioskIsOvertime(e.target.checked)}
+                            className="w-4 h-4 rounded text-[#6B0B0C] focus:ring-[#6B0B0C]"
+                          />
+                          Treatment Customer Melewati Jam Operasional Toko (Lembur)
+                        </label>
+                        <span className="text-[10px] font-bold text-amber-800 bg-white px-2 py-0.5 rounded border border-amber-200">
+                          Rate Komisi Lembur: {overtimeCommissionRate}%
+                        </span>
+                      </div>
+
+                      {kioskIsOvertime && (
+                        <div className="space-y-3 pt-2 border-t border-amber-200/60">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                                Durasi Lembur (Jam) *
+                              </label>
+                              <input
+                                type="number"
+                                step="0.25"
+                                min="0.25"
+                                value={kioskOvertimeHours}
+                                onChange={(e) => setKioskOvertimeHours(Number(e.target.value))}
+                                className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-xl bg-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                                Nilai Treatment Customer (Rp) *
+                              </label>
+                              <input
+                                type="number"
+                                step="25000"
+                                value={kioskOvertimeVal}
+                                onChange={(e) => setKioskOvertimeVal(Number(e.target.value))}
+                                className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-xl bg-white font-bold text-emerald-700"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                              Nama Customer &amp; Catatan Treatment *
+                            </label>
+                            <input
+                              type="text"
+                              required={kioskIsOvertime}
+                              value={kioskCustomerNotes}
+                              onChange={(e) => setKioskCustomerNotes(e.target.value)}
+                              placeholder="Contoh: Bpk. Tommy - Gentleman Haircut & Full Coloring selesai 22:30 WIB"
+                              className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-xl bg-white"
+                            />
+                          </div>
+
+                          <div className="bg-white p-2.5 rounded-xl border border-amber-200 flex justify-between items-center text-xs">
+                            <span className="text-slate-600 font-medium">Estimasi Komisi Lembur Masuk ke Slip Gaji:</span>
+                            <strong className="text-[#6B0B0C] text-sm font-black">
+                              {formatRupiah(Math.round((kioskOvertimeVal * overtimeCommissionRate) / 100 + kioskOvertimeHours * overtimeHourlyRate))}
+                            </strong>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="submit"
+                      className="px-6 py-2.5 rounded-xl text-xs font-black bg-[#6B0B0C] text-[#FFF8CA] hover:bg-[#520809] transition shadow-xs cursor-pointer flex items-center gap-2"
+                    >
+                      <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span>Konfirmasi &amp; Rekam Presensi Mandiri</span>
+                    </button>
+                  </div>
+                </form>
               </div>
 
               {/* Box Pengaturan Persentase Komisi Lembur */}
@@ -3101,40 +4102,83 @@ export default function AdminPage() {
           )}
 
           {/* ========================================================= */}
-          {/* TAB 7: MANAJEMEN STOK PRODUK */}
+          {/* TAB 7: MANAJEMEN STOK PRODUK (RESTOCK CABANG ONLY) */}
           {/* ========================================================= */}
           {activeTab === "inventory" && (
             <div className="w-full space-y-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-6 rounded-2xl shadow-xs border border-slate-200">
                 <div>
-                  <h1 className="text-2xl font-black text-slate-900">Manajemen Stok &amp; Produk</h1>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Kontrol ketersediaan pomade, clay, beard oil, dan peralatan per cabang.
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                      currentUser.role === "branch" ? "bg-emerald-100 text-emerald-800" : "bg-[#6B0B0C]/10 text-[#6B0B0C]"
+                    }`}>
+                      {currentUser.role === "branch" ? "Mode Cabang: Restock Masuk Saja" : "Akses Owner: Kelola Produk Penuh"}
+                    </span>
+                    <span className="text-xs text-slate-400 font-semibold">• Total {inventory.length} Item</span>
+                  </div>
+                  <h1 className="text-2xl font-black text-slate-900 mt-1">
+                    {currentUser.role === "branch" ? `Stok Produk Cabang (${currentUser.branchName})` : "Manajemen Stok & Inventaris Produk"}
+                  </h1>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {currentUser.role === "branch"
+                      ? "Staf cabang HANYA dapat menambah stok masuk (Restock). Pengurangan stok HANYA otomatis terjadi saat produk terjual di Kasir (POS)."
+                      : "Kontrol ketersediaan pomade, clay, beard elixir, serta catat restock dan audit stok."}
                   </p>
                 </div>
-                <button
-                  onClick={() => {
-                    const name = prompt("Masukkan Nama Produk Baru:");
-                    if (name) {
-                      const newP: ProductStock = {
-                        id: `PRD-0${inventory.length + 1}`,
-                        name,
-                        sku: `RW-NEW-0${inventory.length + 1}`,
-                        category: "Styling",
-                        stock: 20,
-                        minStock: 10,
-                        buyPrice: 80000,
-                        sellPrice: 150000,
-                        status: "Aman",
-                      };
-                      setInventory([...inventory, newP]);
-                    }
-                  }}
-                  className="bg-[#6B0B0C] text-[#FFF8CA] px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-[#520809] transition flex items-center gap-1.5 shadow-xs cursor-pointer"
-                >
-                  <span>+ Tambah Produk Baru</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setRestockProduct(inventory[0]);
+                      setRestockAmount(10);
+                      setRestockNotes("Penerimaan Kiriman dari Gudang Pusat");
+                      setShowRestockModal(true);
+                    }}
+                    className="bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-emerald-700 transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>+ Catat Stok Masuk (Restock)</span>
+                  </button>
+                  {currentUser.role === "owner" && (
+                    <button
+                      onClick={() => {
+                        const name = prompt("Masukkan Nama Produk Baru:");
+                        if (name) {
+                          const newP: ProductStock = {
+                            id: `PRD-0${inventory.length + 1}`,
+                            name,
+                            sku: `RW-NEW-0${inventory.length + 1}`,
+                            category: "Styling",
+                            stock: 20,
+                            minStock: 10,
+                            buyPrice: 80000,
+                            sellPrice: 150000,
+                            status: "Aman",
+                          };
+                          setInventory([...inventory, newP]);
+                        }
+                      }}
+                      className="bg-[#6B0B0C] text-[#FFF8CA] px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-[#520809] transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+                    >
+                      <span>+ Produk Baru</span>
+                    </button>
+                  )}
+                </div>
               </div>
+
+              {currentUser.role === "branch" && (
+                <div className="p-4 bg-emerald-50/80 border border-emerald-200 rounded-2xl flex items-start gap-3 text-xs text-emerald-900">
+                  <span className="text-base">🛡️</span>
+                  <div>
+                    <strong>Sistem Keamanan Stok Anti-Fraud Aktif:</strong>
+                    <p className="text-[11px] text-emerald-800 mt-0.5">
+                      Tombol pengurangan manual dinonaktifkan di akun cabang. Satu-satunya cara stok berkurang adalah ketika customer membeli produk melalui menu <strong>Kasir Barbershop (POS)</strong>.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden">
                 <div className="overflow-x-auto">
@@ -3175,20 +4219,29 @@ export default function AdminPage() {
                               {item.status}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-right space-x-1.5">
+                          <td className="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
                             <button
-                              onClick={() => addStock(item.id, 10)}
-                              className="bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white px-2.5 py-1 rounded font-bold text-xs transition"
+                              onClick={() => {
+                                setRestockProduct(item);
+                                setRestockAmount(10);
+                                setRestockNotes(`Restock ${item.name}`);
+                                setShowRestockModal(true);
+                              }}
+                              className="bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white px-2.5 py-1 rounded-lg font-bold text-xs transition cursor-pointer"
+                              title="Tambah stok masuk / penerimaan barang"
                             >
-                              +10 Masuk
+                              + Restock Masuk
                             </button>
-                            <button
-                              onClick={() => addStock(item.id, -1)}
-                              disabled={item.stock <= 0}
-                              className="bg-slate-100 text-slate-600 hover:bg-slate-200 px-2 py-1 rounded font-bold text-xs transition disabled:opacity-30"
-                            >
-                              -1 Keluar
-                            </button>
+                            {currentUser.role === "owner" && (
+                              <button
+                                onClick={() => addStock(item.id, -1)}
+                                disabled={item.stock <= 0}
+                                className="bg-slate-100 text-slate-600 hover:bg-slate-200 px-2 py-1 rounded-lg font-bold text-xs transition disabled:opacity-30 cursor-pointer"
+                                title="Kurangi stok secara manual (Audit / Rusak)"
+                              >
+                                -1 Audit
+                              </button>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -4029,6 +5082,578 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+      {/* ========================================================= */}
+      {/* MODAL 1: SWITCH AKUN / LOGIN CABANG (MULTI-ROLE) */}
+      {/* ========================================================= */}
+      {showAccountModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="font-black text-slate-900 text-base">Ganti Akun / Login Cabang</h3>
+                <p className="text-xs text-slate-500">
+                  Beralih peran antara Akun Owner (Pusat) atau Akun Kasir Cabang spesifik.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAccountModal(false)}
+                className="text-slate-400 hover:text-slate-700 text-lg p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 pt-4">
+              {userAccounts.map((acc) => {
+                const isActive = currentUser.id === acc.id;
+                return (
+                  <div
+                    key={acc.id}
+                    onClick={() => switchAccount(acc)}
+                    className={`p-4 rounded-2xl border-2 transition cursor-pointer flex items-center justify-between ${
+                      isActive
+                        ? "border-[#6B0B0C] bg-[#FFF8CA]/30 shadow-xs"
+                        : "border-slate-200 hover:border-slate-300 bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg ${acc.color || "bg-slate-700 text-white"}`}>
+                        {acc.role === "owner" ? "👑" : "🏪"}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold text-xs text-slate-900">{acc.name}</h4>
+                          {isActive && (
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-[#6B0B0C] text-[#FFF8CA]">
+                              Aktif Sekarang
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          {acc.role === "owner"
+                            ? "Akses Penuh: Finansial, CRUD Karyawan, Cabang & Payroll"
+                            : `Akses Terbatas: Kasir & Presensi Cabang ${acc.branchName}`}
+                        </p>
+                        <div className="text-[10px] text-slate-400 font-mono mt-0.5">PIN Akses: {acc.pin}</div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                        isActive
+                          ? "bg-[#6B0B0C] text-[#FFF8CA]"
+                          : "bg-slate-100 hover:bg-slate-200 text-slate-800"
+                      }`}
+                    >
+                      {isActive ? "Sedang Aktif" : "Masuk"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 flex justify-end">
+              <button
+                onClick={() => setShowAccountModal(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL 2: TAMBAH / EDIT CABANG & KURSI (OWNER ONLY) */}
+      {/* ========================================================= */}
+      {showBranchModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="font-black text-slate-900 text-base">
+                  {editingBranch ? `Edit Cabang: ${editingBranch.name}` : "Tambah Cabang Baru"}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Data cabang langsung tersinkron ke kapasitas booking kursi dan akun login kasir.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowBranchModal(false)}
+                className="text-slate-400 hover:text-slate-700 text-lg p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveBranch} className="space-y-4 pt-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Nama Cabang Barbershop *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Kemang Atelier & Lounge"
+                  value={branchNameInput}
+                  onChange={(e) => setBranchNameInput(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Area / Wilayah *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={branchAreaInput}
+                    onChange={(e) => setBranchAreaInput(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Kapasitas Kursi Barber *
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="20"
+                    required
+                    value={branchChairsInput}
+                    onChange={(e) => setBranchChairsInput(Number(e.target.value))}
+                    className="w-full px-3 py-2 text-xs font-bold text-[#6B0B0C] border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Alamat Lengkap *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Jl. Kemang Raya No. 12, Mampang Prapatan"
+                  value={branchAddressInput}
+                  onChange={(e) => setBranchAddressInput(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Jam Operasional *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={branchHoursInput}
+                    onChange={(e) => setBranchHoursInput(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Hotline Telepon *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={branchPhoneInput}
+                    onChange={(e) => setBranchPhoneInput(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                  />
+                </div>
+              </div>
+
+              {!editingBranch && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    PIN Login Akun Kasir Cabang Baru *
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={branchPinInput}
+                    onChange={(e) => setBranchPinInput(e.target.value)}
+                    className="w-full px-3 py-2 text-xs font-mono font-bold tracking-widest border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                  />
+                </div>
+              )}
+
+              <div className="pt-3 border-t border-slate-200 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowBranchModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-[#6B0B0C] text-[#FFF8CA] hover:bg-[#520809] transition shadow-xs cursor-pointer"
+                >
+                  {editingBranch ? "Simpan Perubahan" : "Simpan Cabang Baru"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL 3: TAMBAH / EDIT KARYAWAN & ID UNIK (OWNER ONLY) */}
+      {/* ========================================================= */}
+      {showStaffModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="font-black text-slate-900 text-base">
+                  {editingStaff ? `Edit Data: ${editingStaff.name}` : "Tambah Karyawan & Kapster Baru"}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  ID Unik otomatis dibuatkan sistem untuk digunakan staf saat input absensi mandiri.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowStaffModal(false)}
+                className="text-slate-400 hover:text-slate-700 text-lg p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveStaff} className="space-y-4 pt-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Nama Lengkap Kapster / Staf *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Fajar Ramadhan"
+                  value={staffNameInput}
+                  onChange={(e) => setStaffNameInput(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Jabatan / Role *
+                  </label>
+                  <select
+                    value={staffRoleInput}
+                    onChange={(e) => setStaffRoleInput(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                  >
+                    <option value="Master Barber">Master Barber</option>
+                    <option value="Senior Stylist">Senior Stylist</option>
+                    <option value="Shaving Artisan">Shaving Artisan</option>
+                    <option value="Creative Barber">Creative Barber</option>
+                    <option value="Junior Barber & Washer">Junior Barber &amp; Washer</option>
+                    <option value="Cashier & Host">Cashier &amp; Host</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Penempatan Cabang *
+                  </label>
+                  <select
+                    value={staffBranchInput}
+                    onChange={(e) => setStaffBranchInput(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                  >
+                    {branches.map((b) => (
+                      <option key={b.id} value={b.name}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Nomor WhatsApp / HP *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={staffPhoneInput}
+                    onChange={(e) => setStaffPhoneInput(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Gaji Pokok Bulanan (Rp) *
+                  </label>
+                  <input
+                    type="number"
+                    step="100000"
+                    required
+                    value={staffSalaryInput}
+                    onChange={(e) => setStaffSalaryInput(Number(e.target.value))}
+                    className="w-full px-3 py-2 text-xs font-bold text-emerald-700 border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Shift Kerja *
+                </label>
+                <select
+                  value={staffShiftInput}
+                  onChange={(e) => setStaffShiftInput(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                >
+                  <option value="Pagi (09:00 - 17:00)">Pagi (09:00 - 17:00)</option>
+                  <option value="Middle (10:00 - 18:00)">Middle (10:00 - 18:00)</option>
+                  <option value="Sore (13:00 - 21:00)">Sore (13:00 - 21:00)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Foto Avatar / Profil *
+                </label>
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="url"
+                    required
+                    value={staffAvatarInput}
+                    onChange={(e) => setStaffAvatarInput(e.target.value)}
+                    className="flex-1 px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                  />
+                  <img src={staffAvatarInput} alt="Preview" className="w-9 h-9 rounded-full object-cover border border-slate-300" />
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-200 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowStaffModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-[#6B0B0C] text-[#FFF8CA] hover:bg-[#520809] transition shadow-xs cursor-pointer"
+                >
+                  {editingStaff ? "Simpan Perubahan" : "Simpan Karyawan"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL 4: KARTU IDENTITAS KARYAWAN (ID CARD VIEW) */}
+      {/* ========================================================= */}
+      {viewingIdCardStaff && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 text-center animate-in zoom-in-95 duration-150">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100 mb-4">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                Official Staff ID Card
+              </span>
+              <button
+                onClick={() => setViewingIdCardStaff(null)}
+                className="text-slate-400 hover:text-slate-700 text-lg p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Kartu Fisik Preview */}
+            <div className="p-6 rounded-2xl bg-gradient-to-b from-slate-900 via-slate-800 to-slate-950 text-white shadow-xl relative overflow-hidden border border-slate-700">
+              {/* Background Accent */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#6B0B0C]/40 rounded-full blur-2xl"></div>
+
+              <div className="relative z-10 flex flex-col items-center">
+                <div className="flex items-center gap-1.5 mb-3">
+                  <span className="w-5 h-5 rounded bg-[#6B0B0C] text-[#FFF8CA] font-black text-xs flex items-center justify-center">
+                    G
+                  </span>
+                  <span className="font-extrabold tracking-widest text-xs text-[#FFF8CA]">
+                    GLORIOUS ATELIER
+                  </span>
+                </div>
+
+                <img
+                  src={viewingIdCardStaff.avatar}
+                  alt={viewingIdCardStaff.name}
+                  className="w-20 h-20 rounded-2xl object-cover border-2 border-[#FFF8CA] shadow-md mb-3"
+                />
+
+                <h4 className="text-base font-black text-white">{viewingIdCardStaff.name}</h4>
+                <p className="text-[11px] text-[#FFF8CA] font-medium">{viewingIdCardStaff.role}</p>
+                <div className="text-[10px] text-slate-400 mt-0.5">{viewingIdCardStaff.branch}</div>
+
+                {/* ID Unik Display */}
+                <div className="mt-4 p-2.5 rounded-xl bg-white/10 border border-white/20 w-full text-center">
+                  <div className="text-[9px] uppercase tracking-widest text-slate-300 font-bold mb-0.5">
+                    Nomor ID Unik Presensi
+                  </div>
+                  <div className="font-mono text-base font-black text-[#FFF8CA] tracking-wider">
+                    {viewingIdCardStaff.uniqueCode}
+                  </div>
+                </div>
+
+                {/* Barcode Visual Dummy */}
+                <div className="mt-3 flex items-center justify-center gap-1 h-6 w-full opacity-60">
+                  {[...Array(24)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={`h-full bg-white ${i % 3 === 0 ? "w-1" : i % 2 === 0 ? "w-0.5" : "w-1.5"}`}
+                    ></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <p className="text-[10px] text-slate-500 mt-3 leading-relaxed">
+              Karyawan dapat memasukkan kode <strong>{viewingIdCardStaff.uniqueCode}</strong> ini pada tablet kasir cabang untuk melakukan presensi datang &amp; pulang mandiri.
+            </p>
+
+            <div className="pt-4 border-t border-slate-100 flex justify-center gap-2 mt-4">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#6B0B0C] text-[#FFF8CA] hover:bg-[#520809] transition shadow-xs cursor-pointer"
+              >
+                Cetak Kartu ID
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewingIdCardStaff(null)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL 5: RESTOCK PRODUK MASUK (CABANG HANYA BISA RESTOCK) */}
+      {/* ========================================================= */}
+      {showRestockModal && restockProduct && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="font-black text-slate-900 text-base">Catat Stok Masuk (Restock)</h3>
+                <p className="text-xs text-slate-500">
+                  Tambah ketersediaan stok fisik produk yang baru diterima di cabang.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowRestockModal(false)}
+                className="text-slate-400 hover:text-slate-700 text-lg p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleRestockSubmit} className="space-y-4 pt-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Pilih Produk *
+                </label>
+                <select
+                  value={restockProduct.id}
+                  onChange={(e) => {
+                    const found = inventory.find((p) => p.id === e.target.value);
+                    if (found) setRestockProduct(found);
+                  }}
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                >
+                  {inventory.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} (Sisa: {p.stock} Pcs)
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Jumlah Masuk (Pcs) *
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    value={restockAmount}
+                    onChange={(e) => setRestockAmount(Number(e.target.value))}
+                    className="w-full px-3 py-2 text-xs font-black text-emerald-700 border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Stok Setelah Restock
+                  </label>
+                  <div className="px-3 py-2 text-xs font-black text-slate-900 bg-slate-100 rounded-xl border border-slate-200">
+                    {restockProduct.stock + Number(restockAmount)} Pcs
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Keterangan / Nomor Surat Jalan
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Kiriman Gudang Pusat #DO-4421"
+                  value={restockNotes}
+                  onChange={(e) => setRestockNotes(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                />
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-500">
+                Penerima: <strong>{currentUser.name}</strong> ({currentUser.branchName})
+              </div>
+
+              <div className="pt-3 border-t border-slate-200 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowRestockModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition shadow-xs cursor-pointer"
+                >
+                  Simpan Stok Masuk
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Modal Catat Pengeluaran Baru */}
       {showExpenseModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
