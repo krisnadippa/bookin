@@ -187,7 +187,7 @@ export default function AdminPage() {
     setCurrentUser(target);
     if (target.role === "branch") {
       setSelectedBranchFilter(target.branchName);
-      if (!["pos", "attendance", "kasbon", "inventory"].includes(activeTab)) {
+      if (!["pos", "bookings", "attendance", "kasbon", "inventory"].includes(activeTab)) {
         setActiveTab("pos");
       }
     } else {
@@ -1566,7 +1566,33 @@ export default function AdminPage() {
                     </div>
                   </button>
 
-                  {/* 2. Absensi Mandiri Kapster */}
+                  {/* 2. Booking & Antrean Cabang (NEW) */}
+                  <button
+                    onClick={() => {
+                      setActiveTab("bookings");
+                      setSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition text-left cursor-pointer ${
+                      activeTab === "bookings"
+                        ? "bg-[#6B0B0C] text-[#FFF8CA] font-bold shadow-sm"
+                        : "hover:bg-slate-100 text-slate-700"
+                    }`}
+                  >
+                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="16" y1="2" x2="16" y2="6"></line>
+                      <line x1="8" y1="2" x2="8" y2="6"></line>
+                      <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <div className="flex-1 flex justify-between items-center">
+                      <span>Booking &amp; Antrean</span>
+                      <span className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full font-bold">
+                        {bookings.filter((b) => b.branch === currentUser.branchName && b.status === "Menunggu").length}
+                      </span>
+                    </div>
+                  </button>
+
+                  {/* 3. Absensi Mandiri Kapster */}
                   <button
                     onClick={() => {
                       setActiveTab("attendance");
@@ -3984,22 +4010,33 @@ export default function AdminPage() {
             <div className="w-full space-y-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-6 rounded-2xl shadow-xs border border-slate-200">
                 <div>
-                  <h1 className="text-2xl font-black text-slate-900">Booking Manajemen</h1>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Daftar reservasi online, pemilihan alokasi kursi, dan status pangkas.
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900">
+                      {currentUser.role === "branch" ? `Antrean Cabang ${currentUser.branchName}` : "Reservasi Online & Kursi"}
+                    </span>
+                    <span className="text-xs text-slate-400 font-semibold">• Real-Time Queue</span>
+                  </div>
+                  <h1 className="text-2xl font-black text-slate-900 mt-1">
+                    {currentUser.role === "branch" ? `Booking & Antrean ${currentUser.branchName}` : "Booking Manajemen & Alokasi Kursi"}
+                  </h1>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {currentUser.role === "branch"
+                      ? `Pantau reservasi tamu online, alokasi nomor kursi barber, dan update status pelayanan khusus cabang ${currentUser.branchName}.`
+                      : "Daftar reservasi online, pemilihan alokasi kursi barber, dan update status pelayanan seluruh cabang."}
                   </p>
                 </div>
                 <button
                   onClick={() => {
                     const id = `GLR-${Math.floor(2000 + Math.random() * 8000)}`;
+                    const targetBranch = currentUser.role === "branch" ? currentUser.branchName : (selectedBranchFilter === "Semua Cabang" ? "Senopati Heritage" : selectedBranchFilter);
                     const newB: BookingItem = {
                       id,
                       customer: "Pelanggan Walk-In",
                       phone: "0812-1111-2222",
-                      branch: selectedBranchFilter === "Semua Cabang" ? "Senopati Heritage" : selectedBranchFilter,
+                      branch: targetBranch,
                       service: "Signature Gentleman Cut",
-                      barber: "Alex 'The Blade' Tan",
-                      chairNo: 2,
+                      barber: staffList.find((s) => s.branch === targetBranch)?.name || "Alex 'The Blade' Tan",
+                      chairNo: 1,
                       date: "18 Nov 2025",
                       time: "17:00",
                       status: "Menunggu",
@@ -4009,6 +4046,10 @@ export default function AdminPage() {
                   }}
                   className="bg-[#6B0B0C] text-[#FFF8CA] px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-[#520809] transition flex items-center gap-1.5 shadow-xs cursor-pointer"
                 >
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
                   <span>+ Tambah Booking Manual</span>
                 </button>
               </div>
@@ -4027,7 +4068,7 @@ export default function AdminPage() {
                     <button
                       key={st}
                       onClick={() => setBookingStatusFilter(st)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 cursor-pointer ${
                         bookingStatusFilter === st
                           ? "bg-[#6B0B0C] text-[#FFF8CA]"
                           : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -4059,9 +4100,10 @@ export default function AdminPage() {
                     <tbody className="divide-y divide-slate-100">
                       {bookings
                         .filter((b) => {
+                          const activeBranch = currentUser.role === "branch" ? currentUser.branchName : selectedBranchFilter;
                           const matchBranch =
-                            selectedBranchFilter === "Semua Cabang" ||
-                            b.branch === selectedBranchFilter;
+                            activeBranch === "Semua Cabang" ||
+                            b.branch === activeBranch;
                           const matchSearch =
                             b.customer.toLowerCase().includes(bookingSearch.toLowerCase()) ||
                             b.id.toLowerCase().includes(bookingSearch.toLowerCase());
