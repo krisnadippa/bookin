@@ -54,6 +54,15 @@ interface StaffMember {
   totalIzin: number;
   baseSalary: number;
   avatar: string;
+  // Foto Absensi di Barbershop
+  checkInPhoto?: string;
+  checkInLocation?: string;
+  checkOutPhoto?: string;
+  checkOutLocation?: string;
+  // Komisi Lembur di Luar Jam Operasional
+  overtimeHours: number;
+  overtimeTreatmentVal: number;
+  overtimeCustomerNotes: string;
 }
 
 interface KasbonRecord {
@@ -292,7 +301,7 @@ export default function AdminPage() {
       branch: "Senopati Heritage",
       phone: "0812-3456-7801",
       checkIn: "08:45 WIB",
-      checkOut: "-",
+      checkOut: "22:15 WIB",
       status: "Hadir",
       shift: "Pagi (09:00 - 17:00)",
       totalHadir: 24,
@@ -300,6 +309,16 @@ export default function AdminPage() {
       baseSalary: 4500000,
       avatar:
         "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop",
+      checkInPhoto:
+        "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=600&auto=format&fit=crop",
+      checkInLocation: "Senopati Heritage (Kursi #1)",
+      checkOutPhoto:
+        "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=600&auto=format&fit=crop",
+      checkOutLocation: "Senopati Heritage (Closing Shop)",
+      overtimeHours: 1.25,
+      overtimeTreatmentVal: 455000,
+      overtimeCustomerNotes:
+        "Bpk. Hendra Wijaya - Treatment komplit minta rapikan brewok & spa kepala melebihi jam operasional toko (21:00)",
     },
     {
       id: "STF-02",
@@ -308,7 +327,7 @@ export default function AdminPage() {
       branch: "SCBD Executive Lounge",
       phone: "0812-3456-7802",
       checkIn: "09:50 WIB",
-      checkOut: "-",
+      checkOut: "22:45 WIB",
       status: "Hadir",
       shift: "Middle (10:00 - 18:00)",
       totalHadir: 25,
@@ -316,6 +335,16 @@ export default function AdminPage() {
       baseSalary: 4000000,
       avatar:
         "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop",
+      checkInPhoto:
+        "https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=600&auto=format&fit=crop",
+      checkInLocation: "SCBD Executive Lounge (Kursi #2)",
+      checkOutPhoto:
+        "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?q=80&w=600&auto=format&fit=crop",
+      checkOutLocation: "SCBD Executive Lounge (Closing Shop)",
+      overtimeHours: 0.75,
+      overtimeTreatmentVal: 275000,
+      overtimeCustomerNotes:
+        "Bpk. Denny Ardiansyah - The Royal Treatment selesai pukul 22:45 WIB",
     },
     {
       id: "STF-03",
@@ -324,7 +353,7 @@ export default function AdminPage() {
       branch: "Dharmawangsa Atelier",
       phone: "0812-3456-7803",
       checkIn: "08:55 WIB",
-      checkOut: "-",
+      checkOut: "21:30 WIB",
       status: "Hadir",
       shift: "Pagi (09:00 - 17:00)",
       totalHadir: 23,
@@ -332,6 +361,16 @@ export default function AdminPage() {
       baseSalary: 3800000,
       avatar:
         "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop",
+      checkInPhoto:
+        "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=600&auto=format&fit=crop",
+      checkInLocation: "Dharmawangsa Atelier (Kursi #1)",
+      checkOutPhoto:
+        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=600&auto=format&fit=crop",
+      checkOutLocation: "Dharmawangsa Atelier (Closing Shop)",
+      overtimeHours: 0.5,
+      overtimeTreatmentVal: 180000,
+      overtimeCustomerNotes:
+        "Bpk. Faisal - Royal Hot Towel Shave & Facial Massage selesai 21:30 WIB",
     },
     {
       id: "STF-04",
@@ -348,6 +387,13 @@ export default function AdminPage() {
       baseSalary: 3800000,
       avatar:
         "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=200&auto=format&fit=crop",
+      checkInPhoto: "",
+      checkInLocation: "",
+      checkOutPhoto: "",
+      checkOutLocation: "",
+      overtimeHours: 0,
+      overtimeTreatmentVal: 0,
+      overtimeCustomerNotes: "",
     },
     {
       id: "STF-05",
@@ -356,7 +402,7 @@ export default function AdminPage() {
       branch: "Senopati Heritage",
       phone: "0812-3456-7805",
       checkIn: "08:30 WIB",
-      checkOut: "-",
+      checkOut: "17:15 WIB",
       status: "Hadir",
       shift: "Pagi (09:00 - 17:00)",
       totalHadir: 26,
@@ -364,10 +410,76 @@ export default function AdminPage() {
       baseSalary: 3000000,
       avatar:
         "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=200&auto=format&fit=crop",
+      checkInPhoto:
+        "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=600&auto=format&fit=crop",
+      checkInLocation: "Senopati Heritage (Kursi #3)",
+      checkOutPhoto:
+        "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=600&auto=format&fit=crop",
+      checkOutLocation: "Senopati Heritage (Handover Shift)",
+      overtimeHours: 0,
+      overtimeTreatmentVal: 0,
+      overtimeCustomerNotes: "Shift reguler selesai on-time",
     },
   ]);
 
-  // Modal Pindah Cabang Staf
+  // --- PENGATURAN KOMISI LEMBUR & MODAL FOTO ABSENSI ---
+  const [overtimeCommissionRate, setOvertimeCommissionRate] = useState<number>(50); // Default 50%
+  const [overtimeHourlyRate, setOvertimeHourlyRate] = useState<number>(35000); // Rp 35.000 / jam
+  const [photoModalStaff, setPhotoModalStaff] = useState<StaffMember | null>(null);
+  const [attendanceActionStaff, setAttendanceActionStaff] = useState<StaffMember | null>(null);
+
+  // Form input update presensi
+  const [modalActionType, setModalActionType] = useState<"checkIn" | "checkOut">("checkIn");
+  const [modalActionTime, setModalActionTime] = useState("08:45 WIB");
+  const [modalActionPhoto, setModalActionPhoto] = useState("https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=600&auto=format&fit=crop");
+  const [modalActionLoc, setModalActionLoc] = useState("Senopati Heritage");
+  const [modalIsOvertime, setModalIsOvertime] = useState(false);
+  const [modalOvertimeHours, setModalOvertimeHours] = useState(1);
+  const [modalOvertimeVal, setModalOvertimeVal] = useState(250000);
+  const [modalCustomerNotes, setModalCustomerNotes] = useState("");
+
+  // Helper hitung komisi lembur kapster
+  const calculateOvertimePay = (staff: StaffMember) => {
+    if (staff.overtimeHours <= 0) return 0;
+    const fromTreatment = (staff.overtimeTreatmentVal * overtimeCommissionRate) / 100;
+    const fromHours = staff.overtimeHours * overtimeHourlyRate;
+    return Math.round(fromTreatment + fromHours);
+  };
+
+  const handleSaveAttendanceRecord = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!attendanceActionStaff) return;
+    setStaffList((prev) =>
+      prev.map((s) => {
+        if (s.id === attendanceActionStaff.id) {
+          if (modalActionType === "checkIn") {
+            return {
+              ...s,
+              status: "Hadir",
+              checkIn: modalActionTime,
+              checkInPhoto: modalActionPhoto,
+              checkInLocation: modalActionLoc,
+            };
+          } else {
+            return {
+              ...s,
+              checkOut: modalActionTime,
+              checkOutPhoto: modalActionPhoto,
+              checkOutLocation: modalActionLoc,
+              overtimeHours: modalIsOvertime ? Number(modalOvertimeHours) : 0,
+              overtimeTreatmentVal: modalIsOvertime ? Number(modalOvertimeVal) : 0,
+              overtimeCustomerNotes: modalIsOvertime ? modalCustomerNotes : "",
+            };
+          }
+        }
+        return s;
+      })
+    );
+    alert(`Presensi ${attendanceActionStaff.name} berhasil diperbarui!`);
+    setAttendanceActionStaff(null);
+  };
+
+    // Modal Pindah Cabang Staf
   const [transferModalStaff, setTransferModalStaff] = useState<StaffMember | null>(null);
   const [targetBranchForTransfer, setTargetBranchForTransfer] = useState<string>("SCBD Executive Lounge");
 
@@ -864,10 +976,20 @@ export default function AdminPage() {
     cutsCount: number;
     cutsCommission: number;
     productCommission: number;
+    overtimeHours: number;
+    overtimeRate: number;
+    overtimePay: number;
+    overtimeNotes: string;
     bonus: number;
     bpjsDeduction: number;
     kasbonDeduction: number;
     netSalary: number;
+    checkInPhoto?: string;
+    checkInTime?: string;
+    checkInLoc?: string;
+    checkOutPhoto?: string;
+    checkOutTime?: string;
+    checkOutLoc?: string;
   } | null>(null);
 
   const formatRupiah = (num: number) => {
@@ -2219,13 +2341,20 @@ export default function AdminPage() {
           {/* ========================================================= */}
           {activeTab === "attendance" && (
             <div className="w-full space-y-6">
+              {/* Header Tab */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-6 rounded-2xl shadow-xs border border-slate-200">
                 <div>
-                  <h1 className="text-2xl font-black text-slate-900">
-                    Absensi &amp; Penugasan Cabang Staf
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#6B0B0C]/10 text-[#6B0B0C]">
+                      Presensi Biometrik &amp; Komisi Lembur
+                    </span>
+                    <span className="text-xs text-slate-400 font-semibold">• Live GPS On-Site</span>
+                  </div>
+                  <h1 className="text-2xl font-black text-slate-900 mt-1">
+                    Absensi, Foto Kehadiran &amp; Komisi Lembur Kapster
                   </h1>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Atur absensi harian dan mutasi / pindah cabang kerja barber secara dinamis.
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Bukti foto selfie saat datang dan pulang di barbershop, serta komisi lembur otomatis saat menangani customer di luar jam operasional.
                   </p>
                 </div>
                 <div className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -2233,19 +2362,153 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* Staff Table */}
+              {/* Box Pengaturan Persentase Komisi Lembur */}
+              <div className="bg-white p-6 rounded-2xl shadow-xs border border-slate-200 space-y-4">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 border-b border-slate-100">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#6B0B0C]/10 text-[#6B0B0C] flex items-center justify-center shrink-0">
+                      <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="font-black text-slate-900 text-sm">
+                        Kebijakan Komisi Lembur Kapster (Treatment di Luar Jam Operasional)
+                      </h3>
+                      <p className="text-xs text-slate-500 max-w-2xl mt-0.5">
+                        Jika treatment customer memakan waktu lama melebihi jam tutup toko (misal lewat jam 21:00 / 22:00), kapster berhak mendapatkan komisi lembur dari nilai treatment ditambah tunjangan lembur per jam.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Pengaturan Nilai Persen */}
+                  <div className="flex flex-wrap items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Persentase Komisi Lembur (%):
+                      </label>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="number"
+                          min="10"
+                          max="100"
+                          step="5"
+                          value={overtimeCommissionRate}
+                          onChange={(e) => setOvertimeCommissionRate(Math.max(0, Number(e.target.value)))}
+                          className="w-20 px-2.5 py-1.5 text-xs font-black text-[#6B0B0C] bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-[#6B0B0C] text-center"
+                        />
+                        <span className="text-xs font-bold text-slate-600">%</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Tunjangan Per Jam (Rp):
+                      </label>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="number"
+                          step="5000"
+                          value={overtimeHourlyRate}
+                          onChange={(e) => setOvertimeHourlyRate(Math.max(0, Number(e.target.value)))}
+                          className="w-28 px-2.5 py-1.5 text-xs font-black text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-[#6B0B0C] text-right"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Quick Preset Buttons */}
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-400 mb-1">Preset Cepat:</span>
+                      <div className="flex gap-1">
+                        {[30, 40, 50, 60, 75].map((pct) => (
+                          <button
+                            key={pct}
+                            type="button"
+                            onClick={() => setOvertimeCommissionRate(pct)}
+                            className={`px-2 py-1 rounded text-[11px] font-bold transition cursor-pointer ${
+                              overtimeCommissionRate === pct
+                                ? "bg-[#6B0B0C] text-[#FFF8CA]"
+                                : "bg-white text-slate-700 hover:bg-slate-200 border border-slate-200"
+                            }`}
+                          >
+                            {pct}%
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Formula Bar */}
+                <div className="bg-amber-50/60 border border-amber-200/80 rounded-xl p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs">
+                  <div className="text-slate-800">
+                    <span className="font-bold text-[#6B0B0C]">Rumus Perhitungan Otomatis:</span>{" "}
+                    <code>
+                      Komisi Lembur = ({overtimeCommissionRate}% × Nilai Treatment Customer Overtime) + (Jam Lembur × {formatRupiah(overtimeHourlyRate)})
+                    </code>
+                  </div>
+                  <span className="text-[11px] font-bold text-emerald-700 bg-white px-2.5 py-1 rounded-lg border border-emerald-200">
+                    ✓ Terhubung ke Slip Gaji
+                  </span>
+                </div>
+              </div>
+
+              {/* 4 KPI Kehadiran & Lembur */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200">
+                  <span className="text-xs font-semibold text-slate-500">Staf Hadir Hari Ini</span>
+                  <div className="text-2xl font-black text-slate-900 mt-1">
+                    {staffList.filter((s) => s.status === "Hadir").length} / {staffList.length} Staf
+                  </div>
+                  <div className="text-[11px] text-emerald-600 font-semibold mt-1">
+                    Semua cabang terisi kapster
+                  </div>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200">
+                  <span className="text-xs font-semibold text-slate-500">Kapster Tercatat Lembur</span>
+                  <div className="text-2xl font-black text-amber-700 mt-1">
+                    {staffList.filter((s) => s.overtimeHours > 0).length} Kapster
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">
+                    Layanan melewati jam operasional
+                  </div>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200">
+                  <span className="text-xs font-semibold text-slate-500">Total Akumulasi Jam Lembur</span>
+                  <div className="text-2xl font-black text-slate-900 mt-1">
+                    {staffList.reduce((acc, s) => acc + s.overtimeHours, 0)} Jam
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1">
+                    Dari 3 sesi treatment overtime
+                  </div>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200">
+                  <span className="text-xs font-semibold text-slate-500">Total Komisi Lembur Terhitung</span>
+                  <div className="text-2xl font-black text-[#6B0B0C] mt-1">
+                    {formatRupiah(staffList.reduce((acc, s) => acc + calculateOvertimePay(s), 0))}
+                  </div>
+                  <div className="text-[11px] text-emerald-700 font-bold mt-1">
+                    Otomatis masuk slip gaji ({overtimeCommissionRate}%)
+                  </div>
+                </div>
+              </div>
+
+              {/* Staff Attendance Table */}
               <div className="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-50 text-slate-500 font-semibold uppercase text-[10px] tracking-wider border-b border-slate-200">
                       <tr>
-                        <th className="py-3 px-4">Nama Staf</th>
-                        <th className="py-3 px-4">Posisi</th>
-                        <th className="py-3 px-4">Cabang Tugas Saat Ini</th>
-                        <th className="py-3 px-4">Shift</th>
-                        <th className="py-3 px-4">Jam Masuk</th>
-                        <th className="py-3 px-4">Status</th>
-                        <th className="py-3 px-4">Kasbon Berjalan</th>
+                        <th className="py-3 px-4">Nama Kapster</th>
+                        <th className="py-3 px-4">Cabang &amp; Shift</th>
+                        <th className="py-3 px-4">Foto Datang (Check-In)</th>
+                        <th className="py-3 px-4">Foto Pulang (Check-Out)</th>
+                        <th className="py-3 px-4">Lembur Customer Overtime</th>
+                        <th className="py-3 px-4">Komisi Lembur ({overtimeCommissionRate}%)</th>
                         <th className="py-3 px-4 text-right">Aksi</th>
                       </tr>
                     </thead>
@@ -2257,56 +2520,165 @@ export default function AdminPage() {
                             : s.branch === selectedBranchFilter
                         )
                         .map((staff) => {
-                          const kasbon = getStaffKasbonDeduction(staff.name);
+                          const overtimePay = calculateOvertimePay(staff);
                           return (
-                            <tr key={staff.id} className="hover:bg-slate-50 transition">
-                              <td className="py-3 px-4">
+                            <tr key={staff.id} className="hover:bg-slate-50/70 transition">
+                              {/* 1. Staf Info */}
+                              <td className="py-3.5 px-4">
                                 <div className="flex items-center gap-3">
                                   <img
                                     src={staff.avatar}
                                     alt={staff.name}
-                                    className="w-9 h-9 rounded-full object-cover border border-slate-200"
+                                    className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-xs shrink-0"
                                   />
                                   <div>
-                                    <p className="font-bold text-slate-900">{staff.name}</p>
-                                    <p className="text-[10px] font-mono text-slate-400">{staff.id}</p>
+                                    <p className="font-bold text-slate-900 text-xs">{staff.name}</p>
+                                    <p className="text-[10px] font-semibold text-slate-500">{staff.role}</p>
+                                    <span className="text-[9px] font-mono text-slate-400">{staff.id}</span>
                                   </div>
                                 </div>
                               </td>
-                              <td className="py-3 px-4 font-semibold text-slate-700">{staff.role}</td>
-                              <td className="py-3 px-4">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#6B0B0C]/10 text-[#6B0B0C] font-bold text-xs">
+
+                              {/* 2. Cabang & Shift */}
+                              <td className="py-3.5 px-4">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#6B0B0C]/10 text-[#6B0B0C] font-bold text-[11px] mb-1">
                                   {staff.branch}
                                 </span>
+                                <p className="text-[11px] text-slate-500">{staff.shift}</p>
                               </td>
-                              <td className="py-3 px-4 text-slate-600">{staff.shift}</td>
-                              <td className="py-3 px-4 font-bold text-emerald-700">{staff.checkIn}</td>
-                              <td className="py-3 px-4">
-                                <span
-                                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                                    staff.status === "Hadir"
-                                      ? "bg-emerald-100 text-emerald-800"
-                                      : "bg-amber-100 text-amber-800"
-                                  }`}
-                                >
-                                  {staff.status}
-                                </span>
-                              </td>
-                              <td className="py-3 px-4">
-                                {kasbon > 0 ? (
-                                  <span className="font-bold text-rose-600">
-                                    Potong {formatRupiah(kasbon)}
-                                  </span>
+
+                              {/* 3. Foto Check In */}
+                              <td className="py-3.5 px-4">
+                                {staff.checkInPhoto ? (
+                                  <div
+                                    onClick={() => setPhotoModalStaff(staff)}
+                                    className="flex items-center gap-2.5 cursor-pointer group"
+                                    title="Klik untuk zoom foto absensi masuk"
+                                  >
+                                    <div className="relative w-12 h-12 rounded-xl overflow-hidden border-2 border-emerald-400 shadow-xs shrink-0 group-hover:scale-105 transition">
+                                      <img
+                                        src={staff.checkInPhoto}
+                                        alt={`Check-in ${staff.name}`}
+                                        className="w-full h-full object-cover"
+                                      />
+                                      <span className="absolute bottom-0 right-0 bg-emerald-600 text-white text-[8px] font-bold px-1 rounded-tl">
+                                        GPS
+                                      </span>
+                                    </div>
+                                    <div>
+                                      <span className="font-bold text-emerald-700 text-xs block">
+                                        {staff.checkIn}
+                                      </span>
+                                      <span className="text-[10px] text-slate-500 truncate max-w-[120px] block">
+                                        {staff.checkInLocation || "Di Cabang"}
+                                      </span>
+                                      <span className="text-[9px] text-[#6B0B0C] font-semibold group-hover:underline">
+                                        Perbesar 🔍
+                                      </span>
+                                    </div>
+                                  </div>
                                 ) : (
-                                  <span className="text-slate-400 text-xs">Tidak Ada</span>
+                                  <span className="text-slate-400 text-xs italic">Belum Check-In</span>
                                 )}
                               </td>
-                              <td className="py-3 px-4 text-right space-x-1.5">
+
+                              {/* 4. Foto Check Out */}
+                              <td className="py-3.5 px-4">
+                                {staff.checkOutPhoto ? (
+                                  <div
+                                    onClick={() => setPhotoModalStaff(staff)}
+                                    className="flex items-center gap-2.5 cursor-pointer group"
+                                    title="Klik untuk zoom foto absensi pulang"
+                                  >
+                                    <div className="relative w-12 h-12 rounded-xl overflow-hidden border-2 border-amber-400 shadow-xs shrink-0 group-hover:scale-105 transition">
+                                      <img
+                                        src={staff.checkOutPhoto}
+                                        alt={`Check-out ${staff.name}`}
+                                        className="w-full h-full object-cover"
+                                      />
+                                      <span className="absolute bottom-0 right-0 bg-amber-600 text-white text-[8px] font-bold px-1 rounded-tl">
+                                        GPS
+                                      </span>
+                                    </div>
+                                    <div>
+                                      <span className="font-bold text-slate-900 text-xs block">
+                                        {staff.checkOut}
+                                      </span>
+                                      <span className="text-[10px] text-slate-500 truncate max-w-[120px] block">
+                                        {staff.checkOutLocation || "Selesai Shift"}
+                                      </span>
+                                      <span className="text-[9px] text-[#6B0B0C] font-semibold group-hover:underline">
+                                        Perbesar 🔍
+                                      </span>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    <span>Sedang Bekerja</span>
+                                  </div>
+                                )}
+                              </td>
+
+                              {/* 5. Overtime Status */}
+                              <td className="py-3.5 px-4">
+                                {staff.overtimeHours > 0 ? (
+                                  <div className="space-y-1">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 font-bold text-[10px]">
+                                      +{staff.overtimeHours} Jam Lembur
+                                    </span>
+                                    <p className="text-[10px] text-slate-600 font-medium line-clamp-1" title={staff.overtimeCustomerNotes}>
+                                      {staff.overtimeCustomerNotes}
+                                    </p>
+                                    <span className="text-[10px] text-slate-500 block">
+                                      Nilai Layanan: <strong>{formatRupiah(staff.overtimeTreatmentVal)}</strong>
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span className="text-slate-400 text-xs">Reguler (Tanpa Lembur)</span>
+                                )}
+                              </td>
+
+                              {/* 6. Komisi Lembur */}
+                              <td className="py-3.5 px-4">
+                                {overtimePay > 0 ? (
+                                  <div>
+                                    <span className="font-black text-xs text-[#6B0B0C] block">
+                                      +{formatRupiah(overtimePay)}
+                                    </span>
+                                    <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                                      Masuk Slip Gaji
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span className="text-slate-400 text-xs">Rp 0</span>
+                                )}
+                              </td>
+
+                              {/* 7. Action Buttons */}
+                              <td className="py-3.5 px-4 text-right space-x-1.5 whitespace-nowrap">
                                 <button
-                                  onClick={() => toggleStaffAttendance(staff.id)}
-                                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+                                  onClick={() => setPhotoModalStaff(staff)}
+                                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+                                  title="Lihat foto selfie masuk & pulang lengkap"
                                 >
-                                  {staff.status === "Hadir" ? "Izin" : "Hadir"}
+                                  Foto Absen
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setAttendanceActionStaff(staff);
+                                    setModalActionType(staff.checkOutPhoto ? "checkOut" : "checkIn");
+                                    setModalActionTime(staff.checkOut !== "-" ? staff.checkOut : "22:15 WIB");
+                                    setModalActionLoc(staff.branch);
+                                    setModalIsOvertime(staff.overtimeHours > 0);
+                                    setModalOvertimeHours(staff.overtimeHours || 1);
+                                    setModalOvertimeVal(staff.overtimeTreatmentVal || 275000);
+                                    setModalCustomerNotes(staff.overtimeCustomerNotes || "Pelanggan VIP treatment malam");
+                                  }}
+                                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200 transition cursor-pointer"
+                                  title="Update jam dan catat lembur customer"
+                                >
+                                  Catat Lembur
                                 </button>
                                 <button
                                   onClick={() => {
@@ -2317,7 +2689,7 @@ export default function AdminPage() {
                                         : "Senopati Heritage"
                                     );
                                   }}
-                                  className="px-3 py-1 rounded-lg text-xs font-bold bg-[#6B0B0C] text-[#FFF8CA] hover:bg-[#520809] transition cursor-pointer"
+                                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#6B0B0C] text-[#FFF8CA] hover:bg-[#520809] transition cursor-pointer"
                                 >
                                   Pindah Cabang
                                 </button>
@@ -2332,7 +2704,6 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* ========================================================= */}
           {/* TAB 5: POS / KASIR BARBERSHOP */}
           {/* ========================================================= */}
           {activeTab === "pos" && (
@@ -2837,11 +3208,16 @@ export default function AdminPage() {
                 <div>
                   <h1 className="text-2xl font-black text-slate-900">Slip Gaji &amp; Komisi Barber</h1>
                   <p className="text-xs text-slate-500 mt-1">
-                    Gaji pokok + Komisi Pangkas (35%) + Komisi Produk (10%) dikurangi <strong>Potongan Kasbon</strong> &amp; BPJS.
+                    Gaji pokok + Komisi Pangkas (35%) + Komisi Produk (10%) + <strong>Komisi Lembur Overtime ({overtimeCommissionRate}%)</strong> dikurangi <strong>Potongan Kasbon</strong> &amp; BPJS.
                   </p>
                 </div>
-                <div className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-900 font-bold text-xs">
-                  Periode: November 2025
+                <div className="flex items-center gap-2">
+                  <div className="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 font-bold text-xs">
+                    Komisi Lembur: {overtimeCommissionRate}%
+                  </div>
+                  <div className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-900 font-bold text-xs">
+                    Periode: November 2025
+                  </div>
                 </div>
               </div>
 
@@ -2855,6 +3231,7 @@ export default function AdminPage() {
                         <th className="py-3 px-4">Gaji Pokok</th>
                         <th className="py-3 px-4">Komisi Jasa (35%)</th>
                         <th className="py-3 px-4">Komisi Produk</th>
+                        <th className="py-3 px-4">Komisi Lembur ({overtimeCommissionRate}%)</th>
                         <th className="py-3 px-4">Potongan Kasbon</th>
                         <th className="py-3 px-4">Potongan BPJS</th>
                         <th className="py-3 px-4">Take Home Pay</th>
@@ -2865,6 +3242,7 @@ export default function AdminPage() {
                       {staffList.map((staff) => {
                         const cutsCommission = staff.role.includes("Master") ? 7455000 : 5850000;
                         const productCommission = staff.role.includes("Master") ? 462000 : 295000;
+                        const overtimePay = calculateOvertimePay(staff);
                         const bpjsDeduction = 250000;
                         const kasbonDeduction = getStaffKasbonDeduction(staff.name);
                         const bonus = 500000;
@@ -2872,6 +3250,7 @@ export default function AdminPage() {
                           staff.baseSalary +
                           cutsCommission +
                           productCommission +
+                          overtimePay +
                           bonus -
                           bpjsDeduction -
                           kasbonDeduction;
@@ -2889,6 +3268,20 @@ export default function AdminPage() {
                             </td>
                             <td className="py-3 px-4 text-emerald-700">
                               {formatRupiah(productCommission)}
+                            </td>
+                            <td className="py-3 px-4">
+                              {overtimePay > 0 ? (
+                                <div>
+                                  <span className="font-black text-xs text-[#6B0B0C] block">
+                                    +{formatRupiah(overtimePay)}
+                                  </span>
+                                  <span className="text-[9px] text-slate-500">
+                                    {staff.overtimeHours} Jam Lembur
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-slate-400">Rp 0</span>
+                              )}
                             </td>
                             <td className="py-3 px-4">
                               {kasbonDeduction > 0 ? (
@@ -2915,10 +3308,20 @@ export default function AdminPage() {
                                     cutsCount: staff.role.includes("Master") ? 142 : 115,
                                     cutsCommission,
                                     productCommission,
+                                    overtimeHours: staff.overtimeHours,
+                                    overtimeRate: overtimeCommissionRate,
+                                    overtimePay,
+                                    overtimeNotes: staff.overtimeCustomerNotes || "Shift reguler tanpa lembur",
                                     bonus,
                                     bpjsDeduction,
                                     kasbonDeduction,
                                     netSalary,
+                                    checkInPhoto: staff.checkInPhoto,
+                                    checkInTime: staff.checkIn,
+                                    checkInLoc: staff.checkInLocation,
+                                    checkOutPhoto: staff.checkOutPhoto,
+                                    checkOutTime: staff.checkOut,
+                                    checkOutLoc: staff.checkOutLocation,
                                   })
                                 }
                                 className="bg-[#6B0B0C]/10 text-[#6B0B0C] hover:bg-[#6B0B0C] hover:text-[#FFF8CA] px-3 py-1.5 rounded-lg font-bold text-xs transition cursor-pointer"
@@ -3098,47 +3501,49 @@ export default function AdminPage() {
       )}
 
       {/* ========================================================= */}
-      {/* MODAL 3: DETAIL SLIP GAJI DENGAN POTONGAN KASBON */}
+      {/* MODAL 2: DETAIL SLIP GAJI KARYAWAN */}
       {/* ========================================================= */}
       {selectedPayslip && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white text-slate-900 rounded-3xl max-w-lg w-full p-6 md:p-8 shadow-2xl border-2 border-[#6B0B0C] relative">
-            <div className="flex justify-between items-start pb-4 border-b border-slate-200">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B0B0C] bg-[#6B0B0C]/10 px-2 py-0.5 rounded">
-                  SLIP GAJI RESMI
-                </span>
-                <h3 className="text-xl font-black text-slate-900 mt-1">GLORIOUS BARBERSHOP</h3>
-                <p className="text-xs text-slate-500">Cabang: {selectedPayslip.branch}</p>
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white text-slate-900 rounded-3xl max-w-lg w-full p-6 md:p-8 shadow-2xl border border-slate-200 my-8">
+            <div className="flex justify-between items-start border-b border-slate-200 pb-4 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#6B0B0C] text-[#FFF8CA] flex items-center justify-center font-black text-lg shadow-sm">
+                  G
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900">GLORIOUS BARBERSHOP</h3>
+                  <p className="text-xs text-slate-500">Cabang: {selectedPayslip.branch}</p>
+                </div>
               </div>
               <div className="text-right text-xs">
-                <span className="font-bold text-slate-700">Periode:</span>
+                <span className="font-bold text-slate-900">SLIP GAJI RESMI</span>
                 <p className="text-slate-500">{selectedPayslip.period}</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 py-4 border-b border-slate-100 text-xs">
+            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 grid grid-cols-2 gap-2 text-xs mb-4">
               <div>
-                <span className="text-slate-400">Nama Barber:</span>
+                <span className="text-slate-400 block text-[10px]">Nama Karyawan:</span>
                 <p className="font-bold text-sm text-slate-900">{selectedPayslip.staffName}</p>
               </div>
               <div>
-                <span className="text-slate-400">Posisi:</span>
+                <span className="text-slate-400 block text-[10px]">Jabatan / Posisi:</span>
                 <p className="font-semibold text-slate-800">{selectedPayslip.role}</p>
               </div>
               <div>
-                <span className="text-slate-400">Total Tamu Dilayani:</span>
+                <span className="text-slate-400 block text-[10px]">Total Tamu Pangkas:</span>
                 <p className="font-bold text-emerald-700">{selectedPayslip.cutsCount} Tamu</p>
               </div>
               <div>
-                <span className="text-slate-400">Status Kasbon:</span>
-                <p className="font-bold text-rose-600">
-                  {selectedPayslip.kasbonDeduction > 0 ? "Ada Cicilan Aktif" : "Bebas Kasbon"}
-                </p>
+                <span className="text-slate-400 block text-[10px]">Status Jam Lembur:</span>
+                <span className={`font-bold text-[11px] ${selectedPayslip.overtimeHours > 0 ? "text-amber-800" : "text-slate-600"}`}>
+                  {selectedPayslip.overtimeHours > 0 ? `${selectedPayslip.overtimeHours} Jam Overtime` : "Tidak Ada Lembur"}
+                </span>
               </div>
             </div>
 
-            <div className="py-4 space-y-2 text-xs">
+            <div className="py-2 space-y-2 text-xs">
               <div className="font-bold text-slate-800 uppercase tracking-wider text-[10px]">
                 Pendapatan (Earnings)
               </div>
@@ -3147,19 +3552,34 @@ export default function AdminPage() {
                 <span className="font-semibold">{formatRupiah(selectedPayslip.baseSalary)}</span>
               </div>
               <div className="flex justify-between text-emerald-700">
-                <span>Komisi Pangkas (35%):</span>
+                <span>Komisi Pangkas Reguler (35%):</span>
                 <span className="font-bold">+{formatRupiah(selectedPayslip.cutsCommission)}</span>
               </div>
               <div className="flex justify-between text-emerald-700">
                 <span>Komisi Penjualan Produk (10%):</span>
                 <span className="font-bold">+{formatRupiah(selectedPayslip.productCommission)}</span>
               </div>
+
+              {/* Komisi Lembur Overtime */}
+              {selectedPayslip.overtimePay > 0 && (
+                <div className="bg-amber-50 p-2.5 rounded-xl border border-amber-200 space-y-1">
+                  <div className="flex justify-between text-[#6B0B0C] font-bold">
+                    <span>Komisi Lembur Customer ({selectedPayslip.overtimeRate}%):</span>
+                    <span>+{formatRupiah(selectedPayslip.overtimePay)}</span>
+                  </div>
+                  <div className="text-[10px] text-amber-900 flex justify-between">
+                    <span>Durasi: {selectedPayslip.overtimeHours} Jam</span>
+                    <span>Detail: {selectedPayslip.overtimeNotes}</span>
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-between text-slate-700">
-                <span>Bonus &amp; Tips:</span>
+                <span>Bonus &amp; Tips Kinerja:</span>
                 <span>+{formatRupiah(selectedPayslip.bonus)}</span>
               </div>
 
-              <div className="font-bold text-slate-800 uppercase tracking-wider text-[10px] pt-3">
+              <div className="font-bold text-slate-800 uppercase tracking-wider text-[10px] pt-2">
                 Potongan (Deductions)
               </div>
               {selectedPayslip.kasbonDeduction > 0 && (
@@ -3181,14 +3601,51 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+            {/* Bukti Foto Absensi di Slip Gaji */}
+            {(selectedPayslip.checkInPhoto || selectedPayslip.checkOutPhoto) && (
+              <div className="mt-4 pt-3 border-t border-slate-100">
+                <span className="text-[10px] font-bold uppercase text-slate-400 block mb-2">
+                  Verifikasi Bukti Foto On-Site Barbershop:
+                </span>
+                <div className="grid grid-cols-2 gap-3">
+                  {selectedPayslip.checkInPhoto && (
+                    <div className="flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-slate-50">
+                      <img
+                        src={selectedPayslip.checkInPhoto}
+                        alt="Foto Masuk"
+                        className="w-10 h-10 rounded-lg object-cover border border-emerald-400"
+                      />
+                      <div className="text-[10px]">
+                        <span className="font-bold text-emerald-700 block">Masuk (Check In)</span>
+                        <span className="text-slate-500">{selectedPayslip.checkInTime}</span>
+                      </div>
+                    </div>
+                  )}
+                  {selectedPayslip.checkOutPhoto && (
+                    <div className="flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-slate-50">
+                      <img
+                        src={selectedPayslip.checkOutPhoto}
+                        alt="Foto Pulang"
+                        className="w-10 h-10 rounded-lg object-cover border border-amber-400"
+                      />
+                      <div className="text-[10px]">
+                        <span className="font-bold text-amber-800 block">Pulang (Check Out)</span>
+                        <span className="text-slate-500">{selectedPayslip.checkOutTime}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between pt-4 border-t border-slate-200 mt-4">
               <div className="text-[10px] text-slate-400">
                 Disahkan HRD &amp; Finance GLORIOUS Barbershop.
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => {
-                    alert(`Mencetak Slip Gaji ${selectedPayslip.staffName}...`);
+                    alert(`Mencetak Slip Gaji ${selectedPayslip.staffName} (Termasuk Komisi Lembur ${formatRupiah(selectedPayslip.overtimePay)})...`);
                     setSelectedPayslip(null);
                   }}
                   className="bg-[#6B0B0C] text-[#FFF8CA] px-4 py-2 rounded-xl text-xs font-bold hover:bg-[#520809] transition cursor-pointer"
@@ -3207,6 +3664,371 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* MODAL 3: PREVIEW FOTO LENGKAP ABSENSI DATANG & PULANG */}
+      {photoModalStaff && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 md:p-8 shadow-2xl border border-slate-200 my-8 space-y-5">
+            <div className="flex justify-between items-start border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#6B0B0C]/10 text-[#6B0B0C]">
+                  Bukti Verifikasi Presensi Biometrik &amp; GPS
+                </span>
+                <h3 className="font-black text-slate-900 text-lg mt-1">
+                  Foto Absensi On-Site: {photoModalStaff.name}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  {photoModalStaff.role} • {photoModalStaff.branch} • Shift: {photoModalStaff.shift}
+                </p>
+              </div>
+              <button
+                onClick={() => setPhotoModalStaff(null)}
+                className="text-slate-400 hover:text-slate-700 text-xl p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Grid 2 Foto: Masuk vs Pulang */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Foto Datang */}
+              <div className="p-4 rounded-2xl border-2 border-emerald-200 bg-emerald-50/30 flex flex-col justify-between space-y-3">
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-black text-emerald-800 flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                      Foto Saat Datang (Check-In)
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                      {photoModalStaff.checkIn}
+                    </span>
+                  </div>
+
+                  <div className="w-full h-56 rounded-xl overflow-hidden border border-emerald-300 relative shadow-xs">
+                    {photoModalStaff.checkInPhoto ? (
+                      <img
+                        src={photoModalStaff.checkInPhoto}
+                        alt="Foto Datang"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">
+                        Belum ada foto check-in
+                      </div>
+                    )}
+                    <span className="absolute bottom-2 left-2 bg-slate-900/70 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                      📍 {photoModalStaff.checkInLocation || photoModalStaff.branch}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-[11px] text-slate-600 bg-white p-2.5 rounded-xl border border-emerald-100">
+                  <p><strong>Verifikasi:</strong> Memakai seragam &amp; apron GLORIOUS lengkap di area kerja kursi pangkas.</p>
+                </div>
+              </div>
+
+              {/* Foto Pulang */}
+              <div className="p-4 rounded-2xl border-2 border-amber-200 bg-amber-50/30 flex flex-col justify-between space-y-3">
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-black text-amber-900 flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                      Foto Saat Pulang (Check-Out)
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900">
+                      {photoModalStaff.checkOut}
+                    </span>
+                  </div>
+
+                  <div className="w-full h-56 rounded-xl overflow-hidden border border-amber-300 relative shadow-xs">
+                    {photoModalStaff.checkOutPhoto ? (
+                      <img
+                        src={photoModalStaff.checkOutPhoto}
+                        alt="Foto Pulang"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">
+                        Sedang bertugas (Belum Check-Out)
+                      </div>
+                    )}
+                    <span className="absolute bottom-2 left-2 bg-slate-900/70 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                      📍 {photoModalStaff.checkOutLocation || photoModalStaff.branch}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-[11px] text-slate-600 bg-white p-2.5 rounded-xl border border-amber-100">
+                  <p><strong>Verifikasi:</strong> Selesai melayani tamu, meja pangkas disterilisasi &amp; laci dikunci.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Banner Rincian Lembur */}
+            {photoModalStaff.overtimeHours > 0 && (
+              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black text-amber-900 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#6B0B0C]"></span>
+                    Layanan Lembur di Luar Jam Operasional Terverifikasi
+                  </span>
+                  <span className="text-xs font-black text-[#6B0B0C] bg-white px-2.5 py-1 rounded-lg border border-amber-200">
+                    +{formatRupiah(calculateOvertimePay(photoModalStaff))}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-700">
+                  <strong>Catatan Treatment Overtime:</strong> {photoModalStaff.overtimeCustomerNotes}
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px] text-slate-600">
+                  <div className="bg-white p-2 rounded-lg border border-amber-100">
+                    <span className="text-[10px] text-slate-400 block">Jam Operasional:</span>
+                    <strong>09:00 - 21:00 WIB</strong>
+                  </div>
+                  <div className="bg-white p-2 rounded-lg border border-amber-100">
+                    <span className="text-[10px] text-slate-400 block">Jam Checkout:</span>
+                    <strong>{photoModalStaff.checkOut}</strong>
+                  </div>
+                  <div className="bg-white p-2 rounded-lg border border-amber-100">
+                    <span className="text-[10px] text-slate-400 block">Durasi Lembur:</span>
+                    <strong className="text-amber-800">{photoModalStaff.overtimeHours} Jam</strong>
+                  </div>
+                  <div className="bg-white p-2 rounded-lg border border-amber-100">
+                    <span className="text-[10px] text-slate-400 block">Nilai Layanan:</span>
+                    <strong className="text-emerald-700">{formatRupiah(photoModalStaff.overtimeTreatmentVal)}</strong>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-between items-center pt-3 border-t border-slate-100">
+              <span className="text-[11px] text-slate-400">
+                Data presensi terverifikasi dengan stempel waktu dan lokasi GPS cabang.
+              </span>
+              <button
+                onClick={() => setPhotoModalStaff(null)}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#6B0B0C] text-[#FFF8CA] hover:bg-[#520809] transition cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: CATAT PRESENSI & INPUT LEMBUR CUSTOMER */}
+      {attendanceActionStaff && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 md:p-8 shadow-2xl border border-slate-200 my-8 space-y-4">
+            <div className="flex justify-between items-start border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="font-black text-slate-900 text-base">
+                  Update Presensi &amp; Catat Lembur Kapster
+                </h3>
+                <p className="text-xs text-slate-500">
+                  {attendanceActionStaff.name} ({attendanceActionStaff.role}) • {attendanceActionStaff.branch}
+                </p>
+              </div>
+              <button
+                onClick={() => setAttendanceActionStaff(null)}
+                className="text-slate-400 hover:text-slate-700 text-lg p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAttendanceRecord} className="space-y-4 pt-1">
+              {/* Tipe Presensi */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Pilih Aksi Presensi *
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setModalActionType("checkIn")}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border transition cursor-pointer ${
+                      modalActionType === "checkIn"
+                        ? "bg-emerald-600 text-white border-emerald-600"
+                        : "bg-slate-50 text-slate-700 border-slate-200"
+                    }`}
+                  >
+                    Check In (Datang di Toko)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModalActionType("checkOut")}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border transition cursor-pointer ${
+                      modalActionType === "checkOut"
+                        ? "bg-amber-600 text-white border-amber-600"
+                        : "bg-slate-50 text-slate-700 border-slate-200"
+                    }`}
+                  >
+                    Check Out (Pulang / Lembur)
+                  </button>
+                </div>
+              </div>
+
+              {/* Jam & Lokasi */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Jam Presensi *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={modalActionTime}
+                    onChange={(e) => setModalActionTime(e.target.value)}
+                    placeholder="e.g. 22:15 WIB"
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Lokasi Cabang GPS *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={modalActionLoc}
+                    onChange={(e) => setModalActionLoc(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                  />
+                </div>
+              </div>
+
+              {/* Foto Bukti Presensi On-site */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Foto Bukti Selfie On-Site Barbershop *
+                </label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      required
+                      value={modalActionPhoto}
+                      onChange={(e) => setModalActionPhoto(e.target.value)}
+                      placeholder="Masukkan URL foto selfie barbershop"
+                      className="flex-1 px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-[#6B0B0C]"
+                    />
+                  </div>
+                  {/* Pilihan Foto Cepat */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-slate-400 font-bold">Pilihan Foto Cepat:</span>
+                    {[
+                      "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=400&auto=format&fit=crop",
+                      "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=400&auto=format&fit=crop",
+                      "https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=400&auto=format&fit=crop",
+                      "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?q=80&w=400&auto=format&fit=crop",
+                    ].map((imgUrl, i) => (
+                      <img
+                        key={i}
+                        src={imgUrl}
+                        alt="Preset"
+                        onClick={() => setModalActionPhoto(imgUrl)}
+                        className={`w-9 h-9 rounded-lg object-cover cursor-pointer border-2 transition ${
+                          modalActionPhoto === imgUrl ? "border-[#6B0B0C] scale-110" : "border-slate-200"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Form Lembur Customer Khusus Check Out */}
+              {modalActionType === "checkOut" && (
+                <div className="bg-amber-50/70 p-4 rounded-2xl border border-amber-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-black text-amber-900 cursor-pointer flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={modalIsOvertime}
+                        onChange={(e) => setModalIsOvertime(e.target.checked)}
+                        className="w-4 h-4 rounded text-[#6B0B0C] focus:ring-[#6B0B0C]"
+                      />
+                      Treatment Customer di Luar Jam Operasional (Lembur)
+                    </label>
+                    <span className="text-[10px] font-bold text-amber-800 bg-white px-2 py-0.5 rounded border border-amber-200">
+                      Rate Komisi: {overtimeCommissionRate}%
+                    </span>
+                  </div>
+
+                  {modalIsOvertime && (
+                    <div className="space-y-3 pt-2 border-t border-amber-200/60">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                            Durasi Lembur (Jam) *
+                          </label>
+                          <input
+                            type="number"
+                            step="0.25"
+                            min="0.25"
+                            value={modalOvertimeHours}
+                            onChange={(e) => setModalOvertimeHours(Number(e.target.value))}
+                            className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-xl bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                            Nilai Treatment Layanan (Rp) *
+                          </label>
+                          <input
+                            type="number"
+                            step="25000"
+                            value={modalOvertimeVal}
+                            onChange={(e) => setModalOvertimeVal(Number(e.target.value))}
+                            className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-xl bg-white font-bold text-emerald-700"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Nama Customer &amp; Catatan Treatment *
+                        </label>
+                        <input
+                          type="text"
+                          required={modalIsOvertime}
+                          value={modalCustomerNotes}
+                          onChange={(e) => setModalCustomerNotes(e.target.value)}
+                          placeholder="e.g. Bpk. Hendra - The Royal Treatment & Shave selesai jam 22:15"
+                          className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-xl bg-white"
+                        />
+                      </div>
+
+                      {/* Estimasi Komisi Lembur */}
+                      <div className="bg-white p-2.5 rounded-xl border border-amber-200 flex justify-between items-center text-xs">
+                        <span className="text-slate-600 font-medium">Estimasi Komisi Lembur Diterima:</span>
+                        <strong className="text-[#6B0B0C] text-sm font-black">
+                          {formatRupiah(Math.round((modalOvertimeVal * overtimeCommissionRate) / 100 + modalOvertimeHours * overtimeHourlyRate))}
+                        </strong>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="pt-3 border-t border-slate-200 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAttendanceActionStaff(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-[#6B0B0C] text-[#FFF8CA] hover:bg-[#520809] transition shadow-xs cursor-pointer"
+                >
+                  Simpan Presensi &amp; Lembur
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       {/* Modal Catat Pengeluaran Baru */}
       {showExpenseModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
